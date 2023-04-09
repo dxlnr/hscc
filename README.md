@@ -1,5 +1,8 @@
 # hscc
+
 C Compiler 
+
+First task is to implement a lexer using a finite state machine.
 
 
 ## Prerequisits 
@@ -11,5 +14,13 @@ apt-get update && apt-get install ghc ghc-prof ghc-doc
 ```
 
 
-https://norasandler.com/2017/11/29/Write-a-Compiler.html
+## Run 
 
+```bash 
+ghc main.hs -o hscc && ./hscc 
+```
+
+
+## Additional Information
+
+https://norasandler.com/2017/11/29/Write-a-Compiler.html

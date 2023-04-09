@@ -13,6 +13,7 @@ instance Show Token where
     show SChar = "Special Character"
     show Ident = "Identifier"
 
+-- let keys :: [String] -> 
 -- Lexer
 lexer :: Char -> Token
 lexer c 
@@ -22,6 +23,17 @@ lexer c
 -- Iterate over every single character.
 l c = [ lexer x | x <- c ]
 
+-- FSM 
+--
+-- States
+data Start deriving (Show, Eq)
+data Identifier (Show, Eq)
+data Terminating (Show, Eq)
+
+-- Events
+data Letter m = ReadDataFromEnv (State m Identifier)
+  -- deriving (Show, Eq)
+
 main = do
     args <- getArgs
     file <- openFile (head args) ReadMode
@@ -29,3 +41,4 @@ main = do
     print prog
     print (typeOf prog)
     print (l prog)
+    print (length (l prog))
