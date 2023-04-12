@@ -1,18 +1,18 @@
----- Lexical Analysis
-----
-{-# LANGUAGE OverloadedStrings #-}
-module LexingFSM where
+{-# LANGUAGE OverloadedStrings          #-}
+{-# LANGUAGE GADTs                      #-}
+{-# LANGUAGE GeneralizedNewtypeDeriving #-}
+{-# LANGUAGE TypeFamilies               #-}
+module Main where
 
-import Control.Monad.IO.Class
-import qualified Data.Text.IO as T
-import System.Environment (getArgs)
-import System.IO (openFile, IOMode(ReadMode), hGetContents)
-import Data.Typeable (typeOf)
-import Control.Monad      (foldM)
-import Data.List.NonEmpty
-import Data.Text          (Text)
-import Text.Printf        (printf)
-
+import           Control.Monad.IO.Class
+import           Data.Typeable          (typeOf)
+import           Data.Text hiding (head)
+import qualified Data.Text (pack)
+import           Data.List.NonEmpty hiding (head)
+import           Data.Semigroup
+import           System.Environment     (getArgs)
+import           System.IO              (openFile, IOMode(ReadMode), hGetContents)
+-- import qualified Data.Text.IO           as T
 
 ---- Tokens : Keywords, Operators, Strings, Constants, Special Characters, Identifiers.
 data Token = Key | Ops | Str | Const | SChar | Ident
@@ -25,51 +25,57 @@ instance Show Token where
     show SChar = "Special Character"
     show Ident = "Identifier"
 
--- -- Lexer
--- lexer :: Char -> Token
--- lexer c 
---     | (c == ','|| c == '.'|| c == ';'|| c ==':'|| c =='?'|| c =='*') = SChar
---     | otherwise = Str 
+-- States (phantom types)
+data Init
+data ReadProg
+data Lexing
 
--- -- Iterate over every single character.
--- l c = [ lexer x | x <- c ]
+-- Protocol
+-- Events are specified as type class methods, 
+-- where method type signatures describe state transitions.
+class Lexer m where 
+    type State m :: * -> *
+    initial      :: m (State m Init)
+    readIn       :: State m Init -> m (State m ReadProg)
+    -- lexP         :: State m ReadProg -> m (State m Lexing)
+    end          :: State m ReadProg -> m Text
 
--- main = do
---     args <- getArgs
---     file <- openFile (head args) ReadMode
---     prog <- hGetContents file
---     print prog
---     print (typeOf prog)
---     print (l prog)
---     print (length (l prog))
+-- Driving the state machine
+readProg :: (Lexer m, MonadIO m) => State m Init -> m (State m ReadProg)
+readProg = readIn
+    -- args <- getArgs
+    -- file <- openFile (head args) ReadMode
+    -- prog <- hGetContents file 
+    -- >>= readIn (prog)
 
+run :: (Lexer m, MonadIO m) => m Text
+run =
+    initial >>= readProg >>= end
 
-data LexingState 
-    = Init 
-    | ReturnToken 
-    deriving (Show, Eq)
+newtype LexerT m a = LexerT 
+    { runLexerT :: m a } deriving ( Functor, Monad, Applicative, MonadIO)
 
-data LexingEvent 
-    = GetToken
-    deriving (Show, Eq)
+data LexerState s where
+    Init :: LexerState Init
+    ReadProg :: Text -> LexerState ReadProg 
 
-type FSM s e = s -> e -> IO s
-lexer :: FSM LexingState LexingEvent 
+instance (MonadIO m) => Lexer (LexerT m) where
+    type State (LexerT m) = LexerState
+    initial = return Init
 
--- lexer Init (GetToken token) =
---   return (ReturnToken (token :| []))
---
+    readIn = do
+        -- args <- getArgs
+        -- file <- openFile (head args) ReadMode
+        -- prog <- hGetContents file 
+        prog <- pack "\55555"
+        return (ReadProg prog)
 
-lexer state _ = return state
+    end (ReadProg prog) = return prog
 
-runFsm :: Foldable f => FSM s e -> s -> f e -> IO s
-runFsm = foldM
-
-withLogging
-  :: (Show s, Show e)
-  => FSM s e
-  -> FSM s e
-withLogging fsm s e = do
-  s' <- fsm s e
-  printf "- %s × %s → %s\n" (show s) (show e) (show s')
-  return s'
+main :: IO ()
+main = do 
+    -- args <- getArgs
+    -- file <- openFile (head args) ReadMode
+    -- prog <- hGetContents file 
+    prog <- runLexerT run 
+    putStrLn("\n" ++ prog)
