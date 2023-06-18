@@ -23,6 +23,6 @@ ghc main.hs -o hscc && ./hscc
 
 ## Additional Information
 
+- [Compilers - Principles, Techniques & Tools](https://en.wikipedia.org/wiki/Compilers:_Principles,_Techniques,_and_Tools)
 - [Crafting Interpreters](https://craftinginterpreters.com/) by Robert Nystrom is the source.
-
 - https://norasandler.com/2017/11/29/Write-a-Compiler.html

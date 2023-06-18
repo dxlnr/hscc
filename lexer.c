@@ -27,19 +27,60 @@ char *read_file(char *fname)
 
     return s;
 }
+
+typedef enum Token {
+    ident = 0,
+    keyword = 1,
+    constant = 2,
+    str = 3,
+    schar = 4,
+    ops = 5,
+} token;
+
+/* typedef struct LexerToken { */
+/*     token t; */
+/*     char *s; */ 
+/* }; */
+
+void *lexical_analysis(char *s, token *ts) {
+    int i = 0;
+    ts = (token*) malloc(sizeof(token) * 1000);
+
+    for (char c = *s; c != '\0'; c = *++s)
+    {
+        putchar(c);
+        if (
+           ( c == '[' ) || ( c == ']' ) || 
+           ( c == '(' ) || ( c == ')' ) ||
+           ( c == '{' ) || ( c == '}' ) ||
+           ( c == ',' ) || ( c == ';' ) || 
+           ( c == ':' ) || ( c == '=' ) ||
+           ( c == '*' ) || ( c == '#' ) ||
+           ( c == '.' ) || ( c == '~' ) )
+        {
+            ts[i] = schar;
+            i++;
+        }
+    }
+}
  
 int main(int argc, char **argv)
 {
-    /* char fname[1024]; */
-    char *fcontent = read_file(argv[1]);
-    if (fcontent == NULL)
+    char *fc = read_file(argv[1]);
+    if (fc == NULL)
     {
         printf("Error reading file.\n");
         return 1;
     }
 
-    printf(fcontent);
-    free(fcontent);
+    token* ts;
+    lexical_analysis(fc, ts);
+    
+    for(int i = 0; i < sizeof(ts); i++) { 
+        printf("%d ", ts[i]);
+    }
+
+    free(fc);
 
     return 0;
 }
