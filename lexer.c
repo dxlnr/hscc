@@ -28,27 +28,58 @@ char *read_file(char *fname)
     return s;
 }
 
-typedef enum Token {
+typedef enum token_type {
     ident = 0,
     keyword = 1,
     constant = 2,
     str = 3,
     schar = 4,
     ops = 5,
-} token;
+} token_type_t;
 
-/* typedef struct LexerToken { */
-/*     token t; */
-/*     char *s; */ 
-/* }; */
+typedef struct token {
+    token_type_t t;
+    char *s; 
+} token_t;
 
-void *lexical_analysis(char *s, token *ts) {
-    int i = 0;
-    ts = (token*) malloc(sizeof(token) * 1000);
+void print_token(token_t *token) {
+    printf("(%s, %d)", token->s, token->t);
+}
+
+typedef struct tokens {
+    token_t t;
+    struct tokens* next;
+} tokens_t;
+
+void push(tokens_t *head, token_t token) {
+    tokens_t *current = head;
+
+    while (current->next != NULL) {
+        current = current->next;
+    }
+
+    current->next = (tokens_t *) malloc(sizeof(tokens_t));
+    current->next->t= token;
+    current->next->next = NULL;
+}
+
+void show_tokens(tokens_t *head) {
+    tokens_t * current = head;
+
+    while (current != NULL) {
+        print_token(&current->t);
+        current = current->next;
+    }
+}
+
+void lexical_analysis(char *s, tokens_t *ts) {
+    token_type_t token_type;
+    /* ts = (token*) malloc(sizeof(token) * 1000); */
 
     for (char c = *s; c != '\0'; c = *++s)
     {
-        putchar(c);
+        /* int a = getchar(c); */
+        /* printf("%d", a); */
         if (
            ( c == '[' ) || ( c == ']' ) || 
            ( c == '(' ) || ( c == ')' ) ||
@@ -58,11 +89,12 @@ void *lexical_analysis(char *s, token *ts) {
            ( c == '*' ) || ( c == '#' ) ||
            ( c == '.' ) || ( c == '~' ) )
         {
-            ts[i] = schar;
-            i++;
+            token_t t = { .t = schar, .s = &c };
+            print_token(&t);
         }
     }
 }
+
  
 int main(int argc, char **argv)
 {
@@ -73,12 +105,16 @@ int main(int argc, char **argv)
         return 1;
     }
 
-    token* ts;
-    lexical_analysis(fc, ts);
+    tokens_t *tokens = NULL;
+    tokens = (tokens_t *) malloc(sizeof(tokens_t));
+
+    lexical_analysis(fc, tokens);
+
+    /* show_tokens(tokens); */
     
-    for(int i = 0; i < sizeof(ts); i++) { 
-        printf("%d ", ts[i]);
-    }
+    /* for(int i = 0; i < sizeof(ts); i++) { */ 
+    /*     printf("%d ", ts[i]); */
+    /* } */
 
     free(fc);
 
