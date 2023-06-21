@@ -84,8 +84,7 @@ void show_tokens(tokens_t *tokens) {
     }
 }
 
-/* void lexical_analysis(char *s, tokens_t *ts) { */
-tokens_t lexical_analysis(char *s) {
+tokens_t *lexical_analysis(char *s) {
     tokens_t *tokens = NULL;
 
     for (int i = 0; i < strlen(s); ++i){
@@ -94,11 +93,18 @@ tokens_t lexical_analysis(char *s) {
            ( s[i] == '(' ) || ( s[i] == ')' ) ||
            ( s[i] == '{' ) || ( s[i] == '}' ) ||
            ( s[i] == ',' ) || ( s[i] == ';' ) || 
-           ( s[i] == ':' ) || ( s[i] == '=' ) ||
+           ( s[i] == ':' ) || (( s[i] == '=' ) && ( s[i] == ' ' )) ||
            ( s[i] == '*' ) || ( s[i] == '#' ) ||
-           ( s[i] == '.' ) || ( s[i] == '~' ) )
+           ( s[i] == '.' ) || ( s[i] == '~' ))
         {
             token_t t = { .t = schar, .s = &s[i], .ptr_l = 1 };
+            append_token(&tokens, t);
+        } else if (
+           ( s[i] == '+' ) || ( s[i] == '-' ) ||
+           ( s[i] == '/' ) || ( s[i] == '*' ) ||
+           ( s[i] == '%' )) 
+        {
+            token_t t = { .t = ops, .s = &s[i], .ptr_l = 1 };
             append_token(&tokens, t);
         }
     }
@@ -115,11 +121,7 @@ int main(int argc, char **argv)
         return 1;
     }
 
-    tokens_t *tokens = NULL;
-    /* token_t test = { .t = schar, .s = "", .ptr_l = 1 }; */
-    /* push(&tokens, test); */
-    /* lexical_analysis(fc, tokens); */
-    tokens = lexical_analysis(fc);
+    tokens_t *tokens = lexical_analysis(fc);
 
     printf("Tokens: \n");
     show_tokens(tokens);
