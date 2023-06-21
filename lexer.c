@@ -116,9 +116,10 @@ int main(int argc, char **argv)
     }
 
     tokens_t *tokens = NULL;
-    token_t test = { .t = schar, .s = "", .ptr_l = 1 };
-    push(&tokens, test);
-    lexical_analysis(fc, tokens);
+    /* token_t test = { .t = schar, .s = "", .ptr_l = 1 }; */
+    /* push(&tokens, test); */
+    /* lexical_analysis(fc, tokens); */
+    tokens = lexical_analysis(fc);
 
     printf("Tokens: \n");
     show_tokens(tokens);
