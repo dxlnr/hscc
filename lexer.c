@@ -40,57 +40,63 @@ typedef enum token_type {
 typedef struct token {
     token_type_t t;
     char *s; 
+    int ptr_l;
 } token_t;
 
-void print_token(token_t *token) {
-    printf("(%s, %d)", token->s, token->t);
+void stdout_token(token_t *token) {
+    printf("  (%.*s, %d)\n", token->ptr_l, token->s, token->t);
 }
 
 typedef struct tokens {
     token_t t;
-    struct tokens* next;
+    struct tokens * next;
 } tokens_t;
 
-void push(tokens_t *head, token_t token) {
-    tokens_t *current = head;
+void append_token(tokens_t **head_ref, token_t token) {
+    tokens_t * n_token = (tokens_t *) malloc(sizeof(tokens_t));
+    n_token->t = token;
 
-    while (current->next != NULL) {
-        current = current->next;
+    tokens_t* last = *head_ref;
+    n_token->next = NULL;
+
+    if (*head_ref == NULL) {
+        *head_ref = n_token;
+        return;
     }
-
-    current->next = (tokens_t *) malloc(sizeof(tokens_t));
-    current->next->t= token;
-    current->next->next = NULL;
+    while (last->next != NULL) {
+        last = last->next;
+    }
+    last->next = n_token;
 }
 
-void show_tokens(tokens_t *head) {
-    tokens_t * current = head;
+void push(tokens_t **head_ref, token_t token)
+{
+    tokens_t * n_token = (tokens_t *) malloc(sizeof(tokens_t));
+    n_token->t = token;
+    n_token->next = (*head_ref);
+    (*head_ref) = n_token;
+}
 
-    while (current != NULL) {
-        print_token(&current->t);
-        current = current->next;
+void show_tokens(tokens_t *tokens) {
+    while (tokens != NULL) {
+        stdout_token(&tokens->t);
+        tokens = tokens->next;
     }
 }
 
 void lexical_analysis(char *s, tokens_t *ts) {
-    token_type_t token_type;
-    /* ts = (token*) malloc(sizeof(token) * 1000); */
-
-    for (char c = *s; c != '\0'; c = *++s)
-    {
-        /* int a = getchar(c); */
-        /* printf("%d", a); */
+    for (int i = 0; i < strlen(s); ++i){
         if (
-           ( c == '[' ) || ( c == ']' ) || 
-           ( c == '(' ) || ( c == ')' ) ||
-           ( c == '{' ) || ( c == '}' ) ||
-           ( c == ',' ) || ( c == ';' ) || 
-           ( c == ':' ) || ( c == '=' ) ||
-           ( c == '*' ) || ( c == '#' ) ||
-           ( c == '.' ) || ( c == '~' ) )
+           ( s[i] == '[' ) || ( s[i] == ']' ) || 
+           ( s[i] == '(' ) || ( s[i] == ')' ) ||
+           ( s[i] == '{' ) || ( s[i] == '}' ) ||
+           ( s[i] == ',' ) || ( s[i] == ';' ) || 
+           ( s[i] == ':' ) || ( s[i] == '=' ) ||
+           ( s[i] == '*' ) || ( s[i] == '#' ) ||
+           ( s[i] == '.' ) || ( s[i] == '~' ) )
         {
-            token_t t = { .t = schar, .s = &c };
-            print_token(&t);
+            token_t t = { .t = schar, .s = &s[i], .ptr_l = 1 };
+            append_token(&ts, t);
         }
     }
 }
@@ -106,16 +112,13 @@ int main(int argc, char **argv)
     }
 
     tokens_t *tokens = NULL;
-    tokens = (tokens_t *) malloc(sizeof(tokens_t));
-
+    token_t test = { .t = schar, .s = "", .ptr_l = 1 };
+    push(&tokens, test);
     lexical_analysis(fc, tokens);
 
-    /* show_tokens(tokens); */
+    printf("Tokens: \n");
+    show_tokens(tokens);
     
-    /* for(int i = 0; i < sizeof(ts); i++) { */ 
-    /*     printf("%d ", ts[i]); */
-    /* } */
-
     free(fc);
 
     return 0;
