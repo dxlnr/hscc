@@ -13,13 +13,16 @@ Haskell compiler that is used: [GHC](https://www.haskell.org/ghc/)
 apt-get update && apt-get install ghc ghc-prof ghc-doc
 ```
 
-
 ## Run 
 
 ```bash 
 ghc main.hs -o hscc && ./hscc 
 ```
 
+For the **c** version run
+```bash 
+make main && ./main tests/simple.c
+```
 
 ## Additional Information
 

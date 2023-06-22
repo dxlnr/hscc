@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <ctype.h>
 
 char *read_file(char *fname) 
 {
@@ -28,10 +29,18 @@ char *read_file(char *fname)
     return s;
 }
 
+typedef enum states {
+    START = 0,
+    DIGIT = 1,
+    LETTER = 2, 
+    OPS = 3,
+    /* END = 4 */
+} states_t;
+
 typedef enum token_type {
     ident = 0,
     keyword = 1,
-    constant = 2,
+    integer = 2,
     str = 3,
     schar = 4,
     ops = 5,
@@ -86,32 +95,88 @@ void show_tokens(tokens_t *tokens) {
 
 tokens_t *lexical_analysis(char *s) {
     tokens_t *tokens = NULL;
+    states_t state = START;
 
-    for (int i = 0; i < strlen(s); ++i){
-        if (
-           ( s[i] == '[' ) || ( s[i] == ']' ) || 
-           ( s[i] == '(' ) || ( s[i] == ')' ) ||
-           ( s[i] == '{' ) || ( s[i] == '}' ) ||
-           ( s[i] == ',' ) || ( s[i] == ';' ) || 
-           ( s[i] == ':' ) || (( s[i] == '=' ) && ( s[i] == ' ' )) ||
-           ( s[i] == '*' ) || ( s[i] == '#' ) ||
-           ( s[i] == '.' ) || ( s[i] == '~' ))
-        {
-            token_t t = { .t = schar, .s = &s[i], .ptr_l = 1 };
-            append_token(&tokens, t);
-        } else if (
-           ( s[i] == '+' ) || ( s[i] == '-' ) ||
-           ( s[i] == '/' ) || ( s[i] == '*' ) ||
-           ( s[i] == '%' )) 
-        {
-            token_t t = { .t = ops, .s = &s[i], .ptr_l = 1 };
-            append_token(&tokens, t);
+    int dc = 0;
+    int lc = 0;
+    int ops_c = 0;
+
+    for (int i = 0; i < strlen(s); ++i) {
+        switch(state) {
+            case START:
+                if (isdigit(s[i])) {
+                    state = DIGIT;
+                    dc += 1;
+                } else if (isalpha(s[i])) {
+                    state = LETTER;
+                    lc += 1;
+                } else if ( 
+                 ( s[i] == '+' ) || ( s[i] == '-' ) ||
+                 ( s[i] == '/' ) || ( s[i] == '*' ) ||
+                 ( s[i] == '%' ) || ( s[i] == '=' ) ||
+                 ( s[i] == '<' ) || ( s[i] == '>' ) ||
+                 ( s[i] == '&' ) || ( s[i] == '^' ) ||
+                 ( s[i] == '|' ))
+                { 
+                    state = OPS;
+                    ops_c += 1;
+                } else if (
+                   ( s[i] == '[' ) || ( s[i] == ']' ) || 
+                   ( s[i] == '(' ) || ( s[i] == ')' ) ||
+                   ( s[i] == '{' ) || ( s[i] == '}' ) ||
+                   ( s[i] == ',' ) || ( s[i] == ';' ) || 
+                   ( s[i] == ':' ) || ( s[i] == '=' ) ||
+                   ( s[i] == '*' ) || ( s[i] == '#' ) ||
+                   ( s[i] == '.' ) || ( s[i] == '~' ))
+                {
+                    token_t t = { .t = schar, .s = &s[i], .ptr_l = 1 };
+                    append_token(&tokens, t);
+                }
+                break;
+            case DIGIT:
+                if (isdigit(s[i])) {
+                    dc += 1;
+                } else {
+                    token_t t = { .t = integer, .s = &s[i - dc], .ptr_l = dc };
+                    append_token(&tokens, t);
+                    state = START;
+                    dc = 0;
+                }
+                break;
+            case LETTER:
+                if ( isalpha(s[i]) || isdigit(s[i]) || ( s[i] == '_' )) {
+                    lc += 1;
+                } else {
+                    token_t t = { .t = ident, .s = &s[i - lc], .ptr_l = lc };
+                    append_token(&tokens, t);
+                    state = START;
+                    lc = 0;
+                }
+                break;
+            case OPS:
+                if ( s[i] == '=' )
+                {
+                    ops_c += 1;
+                } else if (( s[i] == '<' ) || ( s[i] == '>' )) 
+                {
+
+                } else {
+                    token_t t = { .t = ops, .s = &s[i - ops_c], .ptr_l = ops_c };
+                    append_token(&tokens, t);
+                    state = START;
+                    ops_c = 0;
+                }
+            default:
+                state = START;
         }
+        /* printf("%d, %.*s\n", isdigit(s[i]), 1, &s[i]); */
+        /* if (isdigit(s[i])) { */
+        /*     printf("\n joooo : %d, %.*s\n", isdigit(s[i]), 1, &s[i]); */
+        /* } */
     }
     return tokens;
 }
 
- 
 int main(int argc, char **argv)
 {
     char *fc = read_file(argv[1]);
@@ -123,9 +188,10 @@ int main(int argc, char **argv)
 
     tokens_t *tokens = lexical_analysis(fc);
 
+    // Show the results to the console.
     printf("Tokens: \n");
     show_tokens(tokens);
-    
+
     free(fc);
 
     return 0;
