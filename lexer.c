@@ -29,6 +29,28 @@ char *read_file(char *fname)
     return s;
 }
 
+char* substr(const char *src, int m, int n)
+{
+    int len = n-m;
+    char *dest = (char*) malloc(sizeof(char)*(len + 1));
+    for (int i=m; i<n && (*(src+i) != '\0'); i++)
+    {
+        *dest = *(src + i);
+        dest++;
+    }
+    *dest = '\0';
+    return (dest - len);
+}
+
+int strin(char **arr, int len, char *s) {
+  for(int i = 0; i < len; ++i) {
+    if(strncmp(arr[i], s, strlen(s)) == 0) {
+      return 1;
+    }
+  }
+  return 0;
+}
+
 typedef enum states {
     START = 0,
     DIGIT = 1,
@@ -36,6 +58,41 @@ typedef enum states {
     OPS = 3,
     /* END = 4 */
 } states_t;
+
+char *keyword_str [] = {
+    "auto", 
+    "double", 
+    "int", 
+    "struct",
+    "break",        
+    "else",        
+    "long",
+    "switch",
+    "case",
+    "enum",
+    "register",  
+    "typedef",
+    "char", 
+    "extern",     
+    "return",    
+    "union",
+    "const",
+    "float",       
+    "short",      
+    "unsigned",
+    "continue",  
+    "for",         
+    "signed",   
+    "void",
+    "default",      
+    "goto",        
+    "sizeof",     
+    "volatile",
+    "do",          
+    "if",         
+    "static",    
+    "while",
+};
 
 typedef enum token_type {
     ident = 0,
@@ -94,6 +151,7 @@ void show_tokens(tokens_t *tokens) {
 }
 
 tokens_t *lexical_analysis(char *s) {
+    token_t t;
     tokens_t *tokens = NULL;
     states_t state = START;
 
@@ -129,7 +187,7 @@ tokens_t *lexical_analysis(char *s) {
                    ( s[i] == '*' ) || ( s[i] == '#' ) ||
                    ( s[i] == '.' ) || ( s[i] == '~' ))
                 {
-                    token_t t = { .t = schar, .s = &s[i], .ptr_l = 1 };
+                    t  = (token_t) { .t = schar, .s = &s[i], .ptr_l = 1 };
                     append_token(&tokens, t);
                 }
                 break;
@@ -137,17 +195,23 @@ tokens_t *lexical_analysis(char *s) {
                 if (isdigit(s[i])) {
                     dc += 1;
                 } else {
-                    token_t t = { .t = integer, .s = &s[i - dc], .ptr_l = dc };
+                    t = (token_t) { .t = integer, .s = &s[i - dc], .ptr_l = dc };
                     append_token(&tokens, t);
                     state = START;
                     dc = 0;
                 }
                 break;
             case LETTER:
-                if ( isalpha(s[i]) || isdigit(s[i]) || ( s[i] == '_' )) {
+                if ( isalpha(s[i]) || isdigit(s[i]) || ( s[i] == '_' ) ) {
                     lc += 1;
                 } else {
-                    token_t t = { .t = ident, .s = &s[i - lc], .ptr_l = lc };
+                    char* dest = substr(s, i - lc, i);
+
+                    if (strin(keyword_str, 32, dest)) {
+                        t = (token_t) { .t = keyword, .s = &s[i - lc], .ptr_l = lc };
+                    } else {
+                        t = (token_t) { .t = ident, .s = &s[i - lc], .ptr_l = lc };
+                    }
                     append_token(&tokens, t);
                     state = START;
                     lc = 0;
@@ -169,10 +233,6 @@ tokens_t *lexical_analysis(char *s) {
             default:
                 state = START;
         }
-        /* printf("%d, %.*s\n", isdigit(s[i]), 1, &s[i]); */
-        /* if (isdigit(s[i])) { */
-        /*     printf("\n joooo : %d, %.*s\n", isdigit(s[i]), 1, &s[i]); */
-        /* } */
     }
     return tokens;
 }
