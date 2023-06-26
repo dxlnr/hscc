@@ -56,7 +56,7 @@ typedef enum states {
     DIGIT = 1,
     LETTER = 2, 
     OPS = 3,
-    /* END = 4 */
+    STR = 4,
 } states_t;
 
 char *keyword_str [] = {
@@ -64,8 +64,8 @@ char *keyword_str [] = {
     "double", 
     "int", 
     "struct",
-    "break",        
-    "else",        
+    "break", 
+    "else",  
     "long",
     "switch",
     "case",
@@ -88,8 +88,8 @@ char *keyword_str [] = {
     "goto",        
     "sizeof",     
     "volatile",
-    "do",          
-    "if",         
+    "do",         
+    "if", 
     "static",    
     "while",
 };
@@ -158,52 +158,57 @@ tokens_t *lexical_analysis(char *s) {
     int dc = 0;
     int lc = 0;
     int ops_c = 0;
+    int str_c = 0;
 
     for (int i = 0; i < strlen(s); ++i) {
         switch(state) {
             case START:
                 if (isdigit(s[i])) {
                     state = DIGIT;
-                    dc += 1;
+                    dc++;
                 } else if (isalpha(s[i])) {
                     state = LETTER;
-                    lc += 1;
+                    lc++;
                 } else if ( 
                  ( s[i] == '+' ) || ( s[i] == '-' ) ||
                  ( s[i] == '/' ) || ( s[i] == '*' ) ||
                  ( s[i] == '%' ) || ( s[i] == '=' ) ||
                  ( s[i] == '<' ) || ( s[i] == '>' ) ||
                  ( s[i] == '&' ) || ( s[i] == '^' ) ||
-                 ( s[i] == '|' ))
+                 ( s[i] == '|' ) || ( s[i] == '!' ))
                 { 
                     state = OPS;
-                    ops_c += 1;
+                    ops_c++;
                 } else if (
                    ( s[i] == '[' ) || ( s[i] == ']' ) || 
                    ( s[i] == '(' ) || ( s[i] == ')' ) ||
                    ( s[i] == '{' ) || ( s[i] == '}' ) ||
                    ( s[i] == ',' ) || ( s[i] == ';' ) || 
-                   ( s[i] == ':' ) || ( s[i] == '=' ) ||
-                   ( s[i] == '*' ) || ( s[i] == '#' ) ||
-                   ( s[i] == '.' ) || ( s[i] == '~' ))
+                   ( s[i] == ':' ) || ( s[i] == '~' ) ||
+                   ( s[i] == '.' ) || ( s[i] == '#' ))
                 {
                     t  = (token_t) { .t = schar, .s = &s[i], .ptr_l = 1 };
                     append_token(&tokens, t);
-                }
+                } else if ( s[i] == '"' ) 
+                {
+                    state = STR;
+                    str_c++;
+                }               
                 break;
             case DIGIT:
                 if (isdigit(s[i])) {
-                    dc += 1;
+                    dc++;
                 } else {
                     t = (token_t) { .t = integer, .s = &s[i - dc], .ptr_l = dc };
                     append_token(&tokens, t);
                     state = START;
                     dc = 0;
+                    i--;
                 }
                 break;
             case LETTER:
                 if ( isalpha(s[i]) || isdigit(s[i]) || ( s[i] == '_' ) ) {
-                    lc += 1;
+                    lc++;
                 } else {
                     char* dest = substr(s, i - lc, i);
 
@@ -215,21 +220,38 @@ tokens_t *lexical_analysis(char *s) {
                     append_token(&tokens, t);
                     state = START;
                     lc = 0;
+                    i--;
                 }
                 break;
             case OPS:
-                if ( s[i] == '=' )
+                if ( 
+                 ( s[i] == '+' ) || ( s[i] == '-' ) ||
+                 ( s[i] == '/' ) || ( s[i] == '*' ) ||
+                 ( s[i] == '%' ) || ( s[i] == '=' ) ||
+                 ( s[i] == '<' ) || ( s[i] == '>' ) ||
+                 ( s[i] == '&' ) || ( s[i] == '^' ) ||
+                 ( s[i] == '|' ) || ( s[i] == '!' ))
                 {
-                    ops_c += 1;
-                } else if (( s[i] == '<' ) || ( s[i] == '>' )) 
-                {
-
+                    ops_c++;
                 } else {
                     token_t t = { .t = ops, .s = &s[i - ops_c], .ptr_l = ops_c };
                     append_token(&tokens, t);
                     state = START;
                     ops_c = 0;
+                    i--;
                 }
+                break;
+            case STR:
+                if (( s[i] != '"' ) && ( s[i] != '\n' )) 
+                {
+                    str_c++;
+                } else {
+                    token_t t = { .t = str, .s = &s[i - str_c], .ptr_l = str_c + 1 };
+                    append_token(&tokens, t);
+                    state = START;
+                    str_c = 0;
+                }
+                break;
             default:
                 state = START;
         }
