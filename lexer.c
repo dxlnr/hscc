@@ -109,8 +109,18 @@ typedef struct token {
     int ptr_l;
 } token_t;
 
+const char * const token_str[] =
+{
+    [ident] = "IDENT",
+    [keyword] = "KEYWORD",
+    [integer]  = "INTEGER",
+    [str]  = "STRING",
+    [schar]  = "SPECIAl CHAR",
+    [ops]  = "OPERATOR",
+};
+
 void stdout_token(token_t *token) {
-    printf("  (%.*s, %d)\n", token->ptr_l, token->s, token->t);
+    printf("  [(%s, %d), %.*s]\n", token_str[token->t], token->t, token->ptr_l, token->s);
 }
 
 typedef struct tokens {
