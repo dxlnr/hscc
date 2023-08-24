@@ -1,3 +1,5 @@
 hscc*
 main.o
 main.hi
+main
+lexer.o

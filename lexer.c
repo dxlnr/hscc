@@ -112,9 +112,9 @@ typedef struct token {
 const char * const token_str[] =
 {
   [keyword] = "KEYWORD",
-  [ident] = "ident",
-  [integer]  = "integer",
-  [str]  = "string",
+  [ident] = "IDENT",
+  [integer]  = "INTEGER",
+  [str]  = "STRING",
   [schar]  = "SPECIAl CHAR",
   [ops]  = "OPERATOR",
 };
