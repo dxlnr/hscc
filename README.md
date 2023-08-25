@@ -44,5 +44,6 @@ For the **c** version, run the bash script and provide an input file
 ## Additional Information
 
 - [Compilers - Principles, Techniques & Tools](https://en.wikipedia.org/wiki/Compilers:_Principles,_Techniques,_and_Tools)
-- [Crafting Interpreters](https://craftinginterpreters.com/) by Robert Nystrom is the source.
-- [pycparser](https://github.com/eliben/pycparser): Complete C99 parser in pure Python
+- [Crafting Interpreters](https://craftinginterpreters.com/) by Robert Nystrom is a great source.
+- [TinyCC](https://github.com/TinyCC/tinycc): The Smallest ANSI C compiler.
+- [pycparser](https://github.com/eliben/pycparser): Complete C99 parser in pure Python.

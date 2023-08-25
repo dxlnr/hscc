@@ -1,3 +1,5 @@
+#define RUN(test) puts("---- " #test " ----"), test(), puts("")
+
 typedef struct {
     char* input;
     TokenList expected_output;
