@@ -19,6 +19,12 @@ amp                 '&'	                                  [LeadingSpace]	Loc=<te
 identifier          'num'		                                            Loc=<test/files/simple.c:6:18>
 r_paren             ')'		                                                Loc=<test/files/simple.c:6:21>
 semi                ';'		                                                Loc=<test/files/simple.c:6:22>
+identifier          'num'	                [StartOfLine] [LeadingSpace]	Loc=<test/files/simple.c:8:5>
+equal               '='	                                  [LeadingSpace]	Loc=<test/files/simple.c:8:9>
+identifier          'num'	                              [LeadingSpace]	Loc=<test/files/simple.c:8:11>
+plus                '+'	                                  [LeadingSpace]	Loc=<test/files/simple.c:8:15>
+numeric_constant    '1'	                                  [LeadingSpace]	Loc=<test/files/simple.c:8:17>
+semi                ';'		                                                Loc=<test/files/simple.c:8:18>
 if                  'if'	                [StartOfLine] [LeadingSpace]	Loc=<test/files/simple.c:9:5>
 l_paren             '('		                                                Loc=<test/files/simple.c:9:7>
 identifier          'num'		                                            Loc=<test/files/simple.c:9:8>

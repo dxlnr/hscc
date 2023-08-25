@@ -3,6 +3,10 @@
 #include <string.h>
 #include <ctype.h>
 
+#define OPERATORS "+-/*%=<>&^|!?"
+#define DELIMITERS ";(){}[],.:"
+#define WHITESPACE " \t\n"
+
 char *read_file(char *fname) 
 {
   FILE *file = NULL;
@@ -57,39 +61,8 @@ typedef enum states {
   LETTER = 2, 
   OPS = 3,
   STR = 4,
+  ERROR = 5,
 } states_t;
-
-char *kw_str[] = {
-  "auto", "double", "int", "struct",
-  "break", 
-  "else",  
-  "long",
-  "switch",
-  "case",
-  "enum",
-  "register",  
-  "typedef",
-  "char", 
-  "extern",     
-  "return", 
-  "union",
-  "const",
-  "float",       
-  "short",      
-  "unsigned",
-  "continue",  
-  "for",         
-  "signed",   
-  "void",
-  "default",      
-  "goto",        
-  "sizeof",     
-  "volatile",
-  "do",         
-  "if", 
-  "static",    
-  "while",
-};
 
 typedef enum token_type {
   // Identifiers
@@ -104,8 +77,8 @@ typedef enum token_type {
   t_float, t_short, t_unsigned, t_continue, t_for, t_signed, t_void, t_default, 
   t_goto, t_sizeof, t_volatile, t_do, t_if, t_static, t_while,
   // Operators
-  t_add, t_sub, t_mul, t_div, t_mod, 
-  t_and, t_or, t_xor, t_not, t_lshift, t_rshift, 
+  t_plus, t_minus, t_mul, t_div, t_mod, 
+  t_ee, t_and, t_or, t_xor, t_not, t_lshift, t_rshift, 
   t_lor, t_land, t_lnot, 
   t_lt, t_le, t_gt, t_ge, t_eq, t_ne,
   // Assignment
@@ -119,7 +92,11 @@ typedef enum token_type {
   // Conditional operator (?)
   t_cond_op,
   // Delimiters
-  t_colon, t_comma, t_period, t_semicolon, t_l_brace, t_r_brace, t_l_paren, t_r_paren, t_l_square, t_r_square,
+  t_colon, t_comma, t_period, t_semicolon, 
+  t_l_brace, t_r_brace, 
+  t_l_paren, t_r_paren, 
+  t_l_square, t_r_square,
+  // Special tokens
   t_eof, 
   t_error,
   // Preprocessor
@@ -129,41 +106,41 @@ typedef enum token_type {
 } token_type_t;
 
 const static struct {
-    token_type_t val;
-    const char *str;
+  token_type_t val;
+  const char *str;
 } kw_to_token [] = {
-    {t_auto, "auto"},
-    {t_int, "int"},
-    {t_double, "double"},
-    {t_struct, "struct"},
-    {t_break, "break"}, 
-    {t_else, "else"},  
-    {t_long, "long"},
-    {t_switch, "switch"},
-    {t_case, "case"},
-    {t_enum, "enum"},
-    {t_register, "register"},  
-    {t_typedef, "typedef"},
-    {t_char, "char"}, 
-    {t_extern, "extern"},     
-    {t_return, "return"},    
-    {t_union, "union"},
-    {t_const, "const"},
-    {t_float, "float"},       
-    {t_short, "short"},      
-    {t_unsigned, "unsigned"},
-    {t_continue, "continue"},  
-    {t_for, "for"},         
-    {t_signed, "signed"},   
-    {t_void, "void"},
-    {t_default, "default"},      
-    {t_goto, "goto"},        
-    {t_sizeof, "sizeof"},     
-    {t_volatile, "volatile"},
-    {t_do, "do"},         
-    {t_if, "if"}, 
-    {t_static, "static"},    
-    {t_while, "while"},
+  {t_auto,     "auto"},
+  {t_int,      "int"},
+  {t_double,   "double"},
+  {t_struct,   "struct"},
+  {t_break,    "break"}, 
+  {t_else,     "else"},  
+  {t_long,     "long"},
+  {t_switch,   "switch"},
+  {t_case,     "case"},
+  {t_enum,     "enum"},
+  {t_register, "register"},  
+  {t_typedef,  "typedef"},
+  {t_char,     "char"}, 
+  {t_extern,   "extern"},     
+  {t_return,   "return"},    
+  {t_union,    "union"},
+  {t_const,    "const"},
+  {t_float,    "float"},       
+  {t_short,    "short"},      
+  {t_unsigned, "unsigned"},
+  {t_continue, "continue"},  
+  {t_for,      "for"},         
+  {t_signed,   "signed"},   
+  {t_void,     "void"},
+  {t_default,  "default"},      
+  {t_goto,     "goto"},        
+  {t_sizeof,   "sizeof"},     
+  {t_volatile, "volatile"},
+  {t_do,       "do"},         
+  {t_if,       "if"}, 
+  {t_static,   "static"},    
+  {t_while,    "while"},
 };
 
 token_type_t kw_to_token_type (const char *str, int len)
@@ -172,6 +149,38 @@ token_type_t kw_to_token_type (const char *str, int len)
     if (strncmp(str, kw_to_token[i].str, len) == 0) {
       return kw_to_token[i].val;    
     }
+  return t_ident;
+}
+
+const static struct {
+  token_type_t type;
+  const char *op;
+  const char *str;
+} ops_table [] = {
+  {t_plus,        "+",  "plus"},
+  {t_minus,       "-",  "minus"},
+  {t_mul,         "*",  "star"}, 
+  {t_div,         "/",  "slash"}, 
+  {t_mod,         "%",  "mod"}, 
+  {t_equals,      "=",  "equal"},
+  {t_plus_plus,   "++", "plusplus"},
+  {t_minus_minus, "--", "minusminus"},
+  {t_ee,          "==", "equalequal"},
+  {t_ne,          "!=", "notequal"},
+  {t_le,          "<=", "lessequal"},
+  {t_ge,          ">=", "greaterequal"},
+  {t_and,         "&&", "ampamp"},
+  {t_or,          "||", "pipepipe"},
+};
+
+token_type_t get_token_type_ops(char *c, int len) 
+{
+  printf("get_token_type_ops: %.*s\n", len, c);
+  for (int i = 0; i < sizeof(ops_table) / sizeof(ops_table[0]); i++) {
+    if (strncmp(c, ops_table[i].op, len) == 0 && strlen(ops_table[i].op) == len) {
+      return ops_table[i].type;
+    }
+  }
   return t_error;
 }
 
@@ -201,7 +210,7 @@ const char * const token_str[] =
   [t_typedef]  = "typedef",
   [t_char]     = "char", 
   [t_extern]   = "extern", 
-  [t_return]   = "return",    
+  [t_return]   = "return", 
   [t_union]    = "union",
   [t_const]    = "const",
   [t_float]    = "float",
@@ -219,7 +228,20 @@ const char * const token_str[] =
   [t_if]       = "if", 
   [t_static]   = "static",    
   [t_while]    = "while",
-  // Special Characters
+
+  // Operators
+  [t_plus]     = "plus", 
+  [t_minus]    = "minus",
+  [t_mul]      = "star", 
+  [t_div]      = "slash", 
+  [t_mod]      = "mod", 
+  [t_and]      = "amp",
+  [t_ee]       = "equalequal",
+
+  // Assignment
+  [t_equals]   = "equal",
+
+  // Delimiters
   [t_colon] = "colon",
   [t_comma] = "comma",
   [t_period] = "period",
@@ -279,20 +301,20 @@ void show_tokens(tokens_t *tokens) {
   }
 }
 
-token_type_t get_token_type_schar(char c) {
+token_type_t get_token_type_delim(char c) {
   switch (c) {
-      case '[': return t_l_square;
-      case ']': return t_r_square;
-      case '{': return t_l_brace;
-      case '}': return t_r_brace;
-      case '(': return t_l_paren;
-      case ')': return t_r_paren;
-      case ',': return t_comma;
-      case ';': return t_semicolon;
-      case ':': return t_colon;
-      case '.': return t_period;
-      case '#': return t_pphash;
-      default:  return t_error;
+    case '[': return t_l_square;
+    case ']': return t_r_square;
+    case '{': return t_l_brace;
+    case '}': return t_r_brace;
+    case '(': return t_l_paren;
+    case ')': return t_r_paren;
+    case ',': return t_comma;
+    case ';': return t_semicolon;
+    case ':': return t_colon;
+    case '.': return t_period;
+    case '#': return t_pphash;
+    default:  return t_error;
   }
 }
 
@@ -315,25 +337,11 @@ tokens_t *lexical_analysis(char *s) {
         } else if (isalpha(s[i])) {
           state = LETTER;
           lc++;
-        } else if ( 
-          ( s[i] == '+' ) || ( s[i] == '-' ) ||
-          ( s[i] == '/' ) || ( s[i] == '*' ) ||
-          ( s[i] == '%' ) || ( s[i] == '=' ) ||
-          ( s[i] == '<' ) || ( s[i] == '>' ) ||
-          ( s[i] == '&' ) || ( s[i] == '^' ) ||
-          ( s[i] == '|' ) || ( s[i] == '!' ))
-        {
+        } else if (strchr(OPERATORS, s[i])) {
           state = OPS;
           ops_c++;
-        } else if (
-          ( s[i] == '[' ) || ( s[i] == ']' ) || 
-          ( s[i] == '(' ) || ( s[i] == ')' ) ||
-          ( s[i] == '{' ) || ( s[i] == '}' ) ||
-          ( s[i] == ',' ) || ( s[i] == ';' ) || 
-          ( s[i] == ':' ) || ( s[i] == '~' ) ||
-          ( s[i] == '.' ) || ( s[i] == '#' )) 
-        {
-          t  = (token_t) { .t = get_token_type_schar(s[i]), .s = &s[i], .ptr_l = 1 };
+        } else if (strchr(DELIMITERS, s[i])) {
+          t  = (token_t) { .t = get_token_type_delim(s[i]), .s = &s[i], .ptr_l = 1 };
           append_token(&tokens, t);
         } else if ( s[i] == '"' ) {
           state = STR;
@@ -352,15 +360,10 @@ tokens_t *lexical_analysis(char *s) {
         }
         break;
       case LETTER:
-        if ( isalpha(s[i]) || isdigit(s[i]) || ( s[i] == '_' ) ) {
+        if (isalnum(s[i]) || s[i] == '_') {
           lc++;
         } else {
-              char* dest = substr(s, i - lc, i);
-              if (strin(kw_str, 32, dest)) {
-                  t = (token_t) { .t = kw_to_token_type(&s[i - lc], lc), .s = &s[i - lc], .ptr_l = lc };
-              } else {
-                  t = (token_t) { .t = t_ident, .s = &s[i - lc], .ptr_l = lc };
-              }
+              t = (token_t) { .t = kw_to_token_type(&s[i - lc], lc), .s = &s[i - lc], .ptr_l = lc };
               append_token(&tokens, t);
               state = START;
               lc = 0;
@@ -368,17 +371,10 @@ tokens_t *lexical_analysis(char *s) {
         }
         break;
       case OPS:
-        if ( 
-          ( s[i] == '+' ) || ( s[i] == '-' ) ||
-          ( s[i] == '/' ) || ( s[i] == '*' ) ||
-          ( s[i] == '%' ) || ( s[i] == '=' ) ||
-          ( s[i] == '<' ) || ( s[i] == '>' ) ||
-          ( s[i] == '&' ) || ( s[i] == '^' ) ||
-          ( s[i] == '|' ) || ( s[i] == '!' ))
-        {
+        if (strchr(OPERATORS, s[i])) {
           ops_c++;
         } else {
-          token_t t = { .t = ops, .s = &s[i - ops_c], .ptr_l = ops_c };
+          t = (token_t) { .t = get_token_type_ops(&s[i - ops_c], ops_c), .s = &s[i - ops_c], .ptr_l = ops_c };
           append_token(&tokens, t);
           state = START;
           ops_c = 0;
@@ -390,7 +386,7 @@ tokens_t *lexical_analysis(char *s) {
         {
           str_c++;
         } else {
-          token_t t = { .t = t_str, .s = &s[i - str_c], .ptr_l = str_c + 1 };
+          t = (token_t) { .t = t_str, .s = &s[i - str_c], .ptr_l = str_c + 1 };
           append_token(&tokens, t);
           state = START;
           str_c = 0;
