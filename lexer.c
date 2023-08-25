@@ -92,35 +92,40 @@ char *kw_str[] = {
 };
 
 typedef enum token_type {
+  // Identifiers
   t_ident, 
-  integer, 
-  str, 
-  ops,
-
-  t_auto, t_int, t_double, t_struct, t_break, t_else, t_long, t_switch, t_case, t_enum, 
-  t_register, t_typedef, t_char, t_extern, t_return, t_union, t_const, t_float, t_short, 
-  t_unsigned, t_continue, t_for, t_signed, t_void, t_default, t_goto, t_sizeof, t_volatile, 
-  t_do, t_if, t_static, t_while,
-
-  t_arrow, t_colon, t_comma, t_dot, t_equal, t_equal_arrow, t_semicolon,
-  t_less,
-  t_greater,
-  t_l_brace,
-  t_r_brace,
-  t_l_paren,
-  t_r_paren,
-  t_l_square,
-  t_r_square,
-  t_underscore,
-  t_directive,
-  t_integer,
-  t_string_block,
-  t_string,
+  // Constants
+  t_number, 
+  //  String literals
+  t_str, 
+  // Keywords
+  t_auto, t_int, t_double, t_struct, t_break, t_else, t_long, t_switch, t_case, 
+  t_enum, t_register, t_typedef, t_char, t_extern, t_return, t_union, t_const, 
+  t_float, t_short, t_unsigned, t_continue, t_for, t_signed, t_void, t_default, 
+  t_goto, t_sizeof, t_volatile, t_do, t_if, t_static, t_while,
+  // Operators
+  t_add, t_sub, t_mul, t_div, t_mod, 
+  t_and, t_or, t_xor, t_not, t_lshift, t_rshift, 
+  t_lor, t_land, t_lnot, 
+  t_lt, t_le, t_gt, t_ge, t_eq, t_ne,
+  // Assignment
+  t_equals, t_times_equal, t_div_equal, t_mod_equal,
+  t_plus_equal, t_minus_equal,
+  t_lshift_equal, t_rshift_equal, t_and_equal, t_xor_equal, t_or_equal,
+  // Increment/decrement
+  t_plus_plus, t_minus_minus,
+  // Structure dereference (->)
+  t_arrow,
+  // Conditional operator (?)
+  t_cond_op,
+  // Delimiters
+  t_colon, t_comma, t_period, t_semicolon, t_l_brace, t_r_brace, t_l_paren, t_r_paren, t_l_square, t_r_square,
   t_eof, 
-
   t_error,
-
+  // Preprocessor
   t_pphash,
+
+  ops,
 } token_type_t;
 
 const static struct {
@@ -179,9 +184,9 @@ typedef struct token {
 const char * const token_str[] =
 {
   [t_ident]    = "identifier",
-  [integer] = "INTEGER",
-  [str] = "STRING",
-
+  [t_number]   = "numeric_constant",
+  [t_str]      = "string_literal",
+  // Keywords
   [t_auto]     = "auto",
   [t_int]      = "int",
   [t_double]   = "double",
@@ -195,7 +200,7 @@ const char * const token_str[] =
   [t_register] = "register",  
   [t_typedef]  = "typedef",
   [t_char]     = "char", 
-  [t_extern]   = "extern",     
+  [t_extern]   = "extern", 
   [t_return]   = "return",    
   [t_union]    = "union",
   [t_const]    = "const",
@@ -203,7 +208,7 @@ const char * const token_str[] =
   [t_short]    = "short",
   [t_unsigned] = "unsigned",
   [t_continue] = "continue",  
-  [t_for]      = "for",         
+  [t_for]      = "for",       
   [t_signed]   = "signed",   
   [t_void]     = "void",
   [t_default]  = "default",      
@@ -214,11 +219,10 @@ const char * const token_str[] =
   [t_if]       = "if", 
   [t_static]   = "static",    
   [t_while]    = "while",
-
-  [ops]  = "OPERATOR",
+  // Special Characters
   [t_colon] = "colon",
   [t_comma] = "comma",
-  [t_dot] = "dot",
+  [t_period] = "period",
   [t_semicolon] = "semi",
   [t_l_brace] = "l_brace",
   [t_r_brace] = "r_brace",
@@ -226,13 +230,16 @@ const char * const token_str[] =
   [t_r_paren] = "r_paren",
   [t_l_square] = "l_square",
   [t_r_square] = "r_square",
+  // Operators
+  [ops]  = "OPERATOR",
+  // End of File
   [t_eof] = "eof", 
-
+  // Removed by the preprocessor.
   [t_pphash] = "hash", 
 };
 
 void stdout_token(token_t *token) {
-  printf("  %-10s '%.*s'\n", token_str[token->t], token->ptr_l, token->s);
+  printf("  %-16s '%.*s'\n", token_str[token->t], token->ptr_l, token->s);
 }
 
 typedef struct tokens {
@@ -283,7 +290,7 @@ token_type_t get_token_type_schar(char c) {
       case ',': return t_comma;
       case ';': return t_semicolon;
       case ':': return t_colon;
-      case '.': return t_dot;
+      case '.': return t_period;
       case '#': return t_pphash;
       default:  return t_error;
   }
@@ -337,7 +344,7 @@ tokens_t *lexical_analysis(char *s) {
         if (isdigit(s[i])) {
           dc++;
         } else {
-          t = (token_t) { .t = integer, .s = &s[i - dc], .ptr_l = dc };
+          t = (token_t) { .t = t_number, .s = &s[i - dc], .ptr_l = dc };
           append_token(&tokens, t);
           state = START;
           dc = 0;
@@ -383,7 +390,7 @@ tokens_t *lexical_analysis(char *s) {
         {
           str_c++;
         } else {
-          token_t t = { .t = str, .s = &s[i - str_c], .ptr_l = str_c + 1 };
+          token_t t = { .t = t_str, .s = &s[i - str_c], .ptr_l = str_c + 1 };
           append_token(&tokens, t);
           state = START;
           str_c = 0;

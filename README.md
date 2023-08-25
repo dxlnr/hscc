@@ -1,6 +1,6 @@
 # hscc
 
-C Compiler in the making. Basically exploring. Written in C (maybe Haskell someday).
+Little C Compiler in the making. Basically exploring. Written in C (maybe Haskell someday).
 
 ## Overview
 
@@ -19,16 +19,16 @@ Using [clang](https://github.com/llvm/llvm-project/tree/main) as a reference, th
 # creating the output via
 clang -Xclang -dump-tokens -fsyntax-only test/files/simple.c &> tok_simple_c_clang
 # tokens (preprocessor got rid of the references to the headers.)
-int             'int'	[StartOfLine]	                Loc=<test/files/simple.c:3:1>
-identifier      'main'	            [LeadingSpace]	Loc=<test/files/simple.c:3:5>
-l_paren         '('		                              Loc=<test/files/simple.c:3:9>
-r_paren         ')'		                              Loc=<test/files/simple.c:3:10>
-l_brace         '{'	                [LeadingSpace]	Loc=<test/files/simple.c:3:12>
-int             'int'	[StartOfLine] [LeadingSpace]  Loc=<test/files/simple.c:4:5>
+int             'int'   [StartOfLine]	                Loc=<test/files/simple.c:3:1>
+identifier      'main'                  [LeadingSpace]	Loc=<test/files/simple.c:3:5>
+l_paren         '('                                     Loc=<test/files/simple.c:3:9>
+r_paren         ')'                                     Loc=<test/files/simple.c:3:10>
+l_brace         '{'                     [LeadingSpace]	Loc=<test/files/simple.c:3:12>
+int             'int'   [StartOfLine]   [LeadingSpace]  Loc=<test/files/simple.c:4:5>
 ...
-semi            ';'		                              Loc=<test/files/simple.c:14:13>
-r_brace         '}'	  [StartOfLine]	                Loc=<test/files/simple.c:15:1>
-eof             ''		                              Loc=<test/files/simple.c:15:2>
+semi            ';'                                     Loc=<test/files/simple.c:14:13>
+r_brace         '}'     [StartOfLine]	                Loc=<test/files/simple.c:15:1>
+eof             ''                                      Loc=<test/files/simple.c:15:2>
 ```
 
 (3) Parsing
