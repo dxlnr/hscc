@@ -38,7 +38,7 @@ eof             ''                                      Loc=<test/files/simple.c
 
 For the **c** version, run the bash script and provide an input file
 ```bash 
-./run.sh tests/simple.c
+./run.sh test/files/simple.c
 ```
 
 ## Additional Information
