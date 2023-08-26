@@ -3,6 +3,8 @@
  * 
 */
 
+#include "hscc.h"
+
 /* find a token and add it to table. */
 t_tokens *tok_add(const char *str, int len)
 {

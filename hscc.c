@@ -4,6 +4,7 @@
 */
 
 #include "hscc.h"
+#include "hscclib.h"
 
 char *read_file(char *fname) 
 {
@@ -33,11 +34,20 @@ char *read_file(char *fname)
 
 int main(int argc, char **argv)
 {
+  if (argc < 2)
+  {
+      printf("Usage: hscc <filename>\n");
+      return 1;
+  }
+
   char *fc = read_file(argv[1]);
   if (fc == NULL)
   {
       printf("Error reading file.\n");
       return 1;
   }
+
+  cc_state *cs= cc_init();
+
   return 0;
 }

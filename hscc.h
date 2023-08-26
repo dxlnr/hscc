@@ -11,7 +11,7 @@
 #include <stdio.h>
 #include <string.h>
 
-/* Tokens definition */
+/* Tokens */
 typedef struct t_tokens {
 } t_tokens;
 
@@ -40,7 +40,8 @@ enum hscc_token_type {
 };
 
 /* Compiler state */
-struct cc_state {
-};
+typedef struct cc_state {
+  unsigned char verbose;
+} cc_state;
 
 #endif

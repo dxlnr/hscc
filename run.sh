@@ -1,6 +1,7 @@
 #!/bin/bash
 
-make main > /dev/null 2>&1
-./main $1
+make all > /dev/null 2>&1
+./hscc $1
 
-rm main *.o
+make clean > /dev/null 2>&1
+rm hscc
