@@ -23,7 +23,7 @@ int             'int'   [StartOfLine]	                Loc=<test/files/simple.c:3
 identifier      'main'                  [LeadingSpace]	Loc=<test/files/simple.c:3:5>
 l_paren         '('                                     Loc=<test/files/simple.c:3:9>
 r_paren         ')'                                     Loc=<test/files/simple.c:3:10>
-l_brace         '{'                     [LeadingSpace]	Loc=<test/files/simple.c:3:12>
+l_brace         '{'                     [LeadingSpace]	Loc=<test/files/simple.c:3:12>Mit Studiogast Oliver Ruhnert, Manager Union Berlin
 int             'int'   [StartOfLine]   [LeadingSpace]  Loc=<test/files/simple.c:4:5>
 ...
 semi            ';'                                     Loc=<test/files/simple.c:14:13>

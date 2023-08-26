@@ -29,13 +29,17 @@ typedef struct file_buffer {
 } file_buffer_t;
 
 struct file_spec {
-    char type;
-    char name[1];
+  char type;
+  /* the intention is behind n[1] is to allocate a variable-length array at the end of the struct.
+   * manually allocating more memory than the size of the struct to accommodate a longer array.
+   * This is a common technique in C, but it is not part of the C standard. 
+   */
+  char name[1];
 };
 
-/* Tokens */
+/* Tokens Table */
 typedef struct t_tokens {
-} t_tokens;
+} t_tokens_t;
 
 
 #define T_IDENT 0x1
@@ -59,15 +63,19 @@ typedef struct cc_state {
   unsigned char dump_ast;
   unsigned char dump_tokens;
 
+  unsigned char filetype; 
+
+  /* input file buffer */
+  file_buffer_t *fb;
   /* output file for preprocessing */
   FILE *ppfp;
   /* files from cli */
   struct file_spec **files; 
   /* output filename */
   char *outfile; 
+  /* number of files */
   int fc;
 } cc_state_t;
-
 
 /* hsccpp */
 const char* get_token_str(int id);

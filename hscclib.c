@@ -4,10 +4,6 @@
 */
 #include "hscc.h"
 
-void dynarray_add(void *pa, int *nb_ptr, void* data)
-{
-}
-
 void mem_error(const char *msg)
 {
     fprintf(stderr, "%s\n", msg);
@@ -28,7 +24,6 @@ static void args_parser_add_file(cc_state_t *s, const char* fn, int filetype)
     struct file_spec *f = hscc_malloc(sizeof *f + strlen(fn));
     f->type = filetype;
     strcpy(f->name, fn);
-    dynarray_add(&s->files, &s->fc, f);
 }
 
 typedef struct arg_options {
@@ -55,7 +50,7 @@ static const arg_options_t args_options [] = {
   { NULL,           arg_option_ignored,     0 }
 };
 
-char *read_file(char *fname) 
+char *read_from_file(char *fname) 
 {
   FILE *file = NULL;
   file = fopen(fname, "r");
@@ -90,6 +85,7 @@ int parse_args(cc_state_t *s, int *argc, char ***argv) {
 
     if (*arg != '-' && *arg != '\0') {
       s->fc++;
+      args_parser_add_file(s, arg, s->filetype);
     } else {
       if (strcmp(arg, "-verbose") == 0) {
         s->verbose = 1;
@@ -110,17 +106,29 @@ int parse_args(cc_state_t *s, int *argc, char ***argv) {
 
   printf("fc: %d\n", s->fc);
   printf("outfile: %s\n", s->outfile);
+  /* printf("verbose: %s\n", s->files); */
 
   return 1;
+}
+
+
+void write_file_to_buf(cc_state_t *s, const char *fn, int len)
+{
 }
 
 cc_state_t *cc_init(void) {
   cc_state_t *s = malloc(sizeof(cc_state_t));
 
+  s->files = NULL;
   s->verbose = 0;
   s->dump_ast= 0;
   s->dump_tokens= 0;
   s->fc= 0;
+  s->outfile = NULL;
 
   return s;
+}
+
+void cc_delete(cc_state_t *s) {
+  free(s);
 }

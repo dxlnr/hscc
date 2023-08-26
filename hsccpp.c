@@ -12,7 +12,7 @@ const char * const token_str[] = {
 };
 
 /* find a token and add it to table. */
-t_tokens *tok_add(const char *str, int len)
+t_tokens_t *tok_add(const char *str, int len)
 {
 }
 
