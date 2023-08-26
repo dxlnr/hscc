@@ -1,4 +1,7 @@
 #include "hscc.h"
 
-cc_state *cc_init(void) {
+int parse_args(cc_state *s, int *argc, char ***argv) {
+  return 1;
 }
+
+cc_state *cc_init(void) {}

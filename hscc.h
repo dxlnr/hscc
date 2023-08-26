@@ -11,6 +11,9 @@
 #include <stdio.h>
 #include <string.h>
 
+/* parse_args return codes: */
+#define ARG_HELP 1
+
 /* Tokens */
 typedef struct t_tokens {
 } t_tokens;
@@ -32,9 +35,15 @@ extern const char * const token_str[];
 
 /* Compiler state */
 typedef struct cc_state {
+  /* command line options */
   unsigned char verbose;
   unsigned char dump_ast;
   unsigned char dump_tokens;
+
+  /* output file for preprocessing */
+  FILE *ppfp;
+
+  int fc;
 } cc_state;
 
 

@@ -6,6 +6,16 @@
 #include "hscc.h"
 #include "hscclib.h"
 
+static const char show_help[] =
+    "HSCC C Compiler "" \n"
+    "\n"
+    "Usage: hscc [options...] [-o outfile] [-c] input file(s)...\n"
+    "General options:\n"
+    "  -o <file>           Place the output into <file>.\n"
+    "  -h                  Display available options (-help-hidden for more).\n"
+    "  -verbose            Display verbose messages.\n"
+;
+
 char *read_file(char *fname) 
 {
   FILE *file = NULL;
@@ -34,20 +44,22 @@ char *read_file(char *fname)
 
 int main(int argc, char **argv)
 {
-  if (argc < 2)
-  {
-      printf("Usage: hscc <filename>\n");
-      return 1;
-  }
+  cc_state *state;
+  int ret;
 
-  char *fc = read_file(argv[1]);
-  if (fc == NULL)
-  {
-      printf("Error reading file.\n");
-      return 1;
+  state= cc_init();
+
+  int args = parse_args(state, &argc, &argv);
+  if (args < 0) return 1;
+
+  if (args == ARG_HELP){
+    fputs(show_help, stdout);
+    return 0;
   }
-  cc_state *cs= cc_init();
-  // cc_compile(cs, fc);
+  /* char *fc = read_file(argv[1]); */
+  if (state->fc == 0) return 1;
+
+  /* cc_compile(cs, fc); */
 
   return 0;
 }
