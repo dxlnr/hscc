@@ -31,7 +31,7 @@ r_brace         '}'     [StartOfLine]	                Loc=<test/files/simple.c:1
 eof             ''                                      Loc=<test/files/simple.c:15:2>
 ```
 
-(3) Parsing
+(3) **Parsing**
 
 
 ## Run the Compiler
@@ -43,7 +43,7 @@ For the **c** version, run the bash script and provide an input file
 
 ## Additional Information
 
-- [Compilers - Principles, Techniques & Tools](https://en.wikipedia.org/wiki/Compilers:_Principles,_Techniques,_and_Tools)
+- [Compilers - Principles, Techniques & Tools](https://en.wikipedia.org/wiki/Compilers:_Principles,_Techniques,_and_Tools): Textbook about compiler construction for programming languages.
 - [Crafting Interpreters](https://craftinginterpreters.com/) by Robert Nystrom is a great source.
 - [TinyCC](https://github.com/TinyCC/tinycc): The Smallest ANSI C compiler.
 - [pycparser](https://github.com/eliben/pycparser): Complete C99 parser in pure Python.

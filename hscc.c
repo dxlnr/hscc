@@ -46,8 +46,8 @@ int main(int argc, char **argv)
       printf("Error reading file.\n");
       return 1;
   }
-
   cc_state *cs= cc_init();
+  // cc_compile(cs, fc);
 
   return 0;
 }
