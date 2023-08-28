@@ -19,6 +19,27 @@ void *hscc_malloc(unsigned long size)
     return ptr;
 }
 
+static void dynarray(void* ptab, int *sptr, void *data)
+{
+  int nb = *sptr;
+  int nb_alloc;
+
+  void **pp;
+  pp = *(void ***)ptab;
+
+  if ((nb & (nb - 1)) == 0) {
+    if (!nb) {
+      nb_alloc = 1;
+    } else {
+      nb_alloc = nb * 2;
+    }
+    pp = realloc(pp, nb_alloc * sizeof(void *));
+    *(void***) ptab = pp;
+  }
+  pp[nb++] = data;
+  *sptr = nb;
+}
+
 static void args_parser_add_file(cc_state_t *s, const char* fn, int filetype)
 {
     struct file_spec *f = hscc_malloc(sizeof *f + strlen(fn));
@@ -78,13 +99,14 @@ char *read_from_file(char *fname)
 
 int parse_args(cc_state_t *s, int *argc, char ***argv) {
   int nb_args = *argc;
+  printf("nb_args: %d\n", nb_args);
   int ca = 1;
 
   while (ca < nb_args) {
+    printf("ca: %d\n", ca);
     char *arg = (*argv)[ca];
 
     if (*arg != '-' && *arg != '\0') {
-      s->fc++;
       args_parser_add_file(s, arg, s->filetype);
     } else {
       if (strcmp(arg, "-verbose") == 0) {
@@ -101,7 +123,11 @@ int parse_args(cc_state_t *s, int *argc, char ***argv) {
       }
     }
     ++ca;
-    return 0;
+    printf("s-> verbose: %d\n", s->verbose);
+  
+    if (s->verbose) {
+      printf("Number of files to compile: %d.", s->fc);
+    }
   }
 
   printf("fc: %d\n", s->fc);
@@ -131,4 +157,9 @@ cc_state_t *cc_init(void) {
 
 void cc_delete(cc_state_t *s) {
   free(s);
+}
+
+void hscc_free(void *ptr)
+{
+    free(ptr);
 }
