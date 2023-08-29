@@ -10,15 +10,6 @@ void mem_error(const char *msg)
     exit (1);
 }
 
-void *hscc_malloc(unsigned long size)
-{
-    void *ptr;
-    ptr = malloc(size);
-    if (!ptr && size)
-        mem_error("memory full (malloc).");
-    return ptr;
-}
-
 static void dynarray(void* ptab, int *sptr, void *data)
 {
   int nb = *sptr;
@@ -42,9 +33,10 @@ static void dynarray(void* ptab, int *sptr, void *data)
 
 static void args_parser_add_file(cc_state_t *s, const char* fn, int filetype)
 {
-    struct file_spec *f = hscc_malloc(sizeof *f + strlen(fn));
-    f->type = filetype;
-    strcpy(f->name, fn);
+  struct file_spec *f = malloc(sizeof *f + strlen(fn));
+  f->type = filetype;
+  strcpy(f->name, fn);
+  dynarray(&s->files, &s->fc, f);
 }
 
 typedef struct arg_options {
@@ -99,11 +91,12 @@ char *read_from_file(char *fname)
 
 int parse_args(cc_state_t *s, int *argc, char ***argv) {
   int nb_args = *argc;
-  printf("nb_args: %d\n", nb_args);
   int ca = 1;
 
+  if (nb_args < 2) {
+    return 1;
+  }
   while (ca < nb_args) {
-    printf("ca: %d\n", ca);
     char *arg = (*argv)[ca];
 
     if (*arg != '-' && *arg != '\0') {
@@ -116,30 +109,31 @@ int parse_args(cc_state_t *s, int *argc, char ***argv) {
       } else if (strcmp(arg, "-dump-tokens") == 0) {
         s->dump_tokens = 1;
       } else if (strcmp(arg, "-o") == 0) {
-        s->outfile = (*argv)[ca+1];
-        ++ca;
+        if (ca + 1 >= nb_args) {
+          return -1;
+        }
+        ca++;
+        s->outfile = (*argv)[ca++];
       } else {
         return -1;
       }
     }
     ++ca;
-    printf("s-> verbose: %d\n", s->verbose);
-  
-    if (s->verbose) {
-      printf("Number of files to compile: %d.", s->fc);
-    }
   }
-
-  printf("fc: %d\n", s->fc);
-  printf("outfile: %s\n", s->outfile);
-  /* printf("verbose: %s\n", s->files); */
-
-  return 1;
+  if (s->verbose) {
+    printf("files to compile: %d \n", s->fc);
+  }
+  return 0;
 }
 
 
 void write_file_to_buf(cc_state_t *s, const char *fn, int len)
 {
+}
+
+
+int cc_run_file(cc_state_t *s, const char *fn) {
+  return 0;
 }
 
 cc_state_t *cc_init(void) {

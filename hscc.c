@@ -16,11 +16,18 @@ static const char show_help[] =
     "  -verbose            Display verbose messages.\n"
 ;
 
+static char *default_out(cc_state_t *s, const char *ffile)
+{
+  char buf[1024];
+  char *ext;
+  const char *name = "a";
+}
 
 int main(int argc, char **argv)
 {
   cc_state_t *state;
-  int ret;
+  const char *ff;
+  int ret, done, n = 0;
 
   state = cc_init();
 
@@ -31,10 +38,20 @@ int main(int argc, char **argv)
     fputs(show_help, stdout);
     return 0;
   }
-  /* char *fc = read_file(argv[1]); */
   if (state->fc == 0) return 1;
 
-  /* cc_compile(cs, fc); */
+  ff = NULL, ret = 0;
+  do {
+    file_spec_t *f = state->files[n];
+    state->filetype = f->type;
+    if (state->verbose == 1)
+      printf("-> %s\n", f->name);
+    if (!ff)
+      ff = f->name;
+    if (cc_run_file(state, f->name) < 0)
+      ret = 1;
+    done = ret || ++n >= state->fc;
+  } while (!done && (state->output_type != CC_OUTPUT_OBJ ));
 
   return 0;
 }

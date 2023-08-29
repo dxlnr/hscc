@@ -11,6 +11,8 @@
 int parse_args(cc_state_t *s, int *argc, char ***argv);
 /* write a file into a buffer */
 void write_file_to_buf(cc_state_t *s, const char *fn, int len);
+/* runs a file through compilation. */
+int cc_run_file(cc_state_t *s, const char *fn);
 /* init compilation program context */
 cc_state_t *cc_init(void);
 /* free the compilation context */

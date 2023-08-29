@@ -13,8 +13,9 @@
 #include <stdint.h>
 
 /* parse_args return codes: */
-#define ARG_HELP 1
+#define ARG_HELP        1
 
+#define CC_OUTPUT_OBJ   1 /* object file */
 
 typedef struct file_buffer {
   uint8_t *buf_ptr;
@@ -28,14 +29,14 @@ typedef struct file_buffer {
   int fd;
 } file_buffer_t;
 
-struct file_spec {
+typedef struct file_spec {
   char type;
   /* the intention is behind n[1] is to allocate a variable-length array at the end of the struct.
    * manually allocating more memory than the size of the struct to accommodate a longer array.
    * This is a common technique in C, but it is not part of the C standard. 
    */
   char name[1];
-};
+} file_spec_t;
 
 /* Tokens Table */
 typedef struct t_tokens {
@@ -73,6 +74,7 @@ typedef struct cc_state {
   struct file_spec **files; 
   /* output filename */
   char *outfile; 
+  int output_type;
   /* number of files */
   int fc;
 } cc_state_t;
