@@ -174,7 +174,12 @@ int cc_run_file(cc_state_t *s, const char *fn) {
 }
 
 int cc_compile(cc_state_t *s) {
-  printf("In cc compile.\n");
+  printf("In cc compile for %s\n", s->fb->fn);
+
+  if (setjmp(s->err_jmp_buf) == 0) {
+    cc_preprocess(s);
+  }
+
   return 0;
 }
 

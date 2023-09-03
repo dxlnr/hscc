@@ -9,6 +9,28 @@ Preprocessor -> Lexing -> Parsing -> Static Analysis -> Intermediate Representat
 ```
 (1) **Preprocessor**
 
+The preprocessor is a tool that processes the source code before it is passed to the actual compiler. The primary tasks are:
+
+- Removing Comments: The preprocessor strips out comments from the source code.
+- Macro Expansion: Replace macros with their definitions. Macros are typically defined using the `#define` directive.
+- File Inclusion: Include the contents of one file into another.
+- Conditional Compilation: Including or excluding parts of the code based on certain conditions using directives like `#if`, `#ifdef`, `#ifndef`, `#else`, `#elif`, and `#endif`.
+
+Example using clang (clang -E)
+```bash
+extern int fputs (const char *__restrict __s, FILE *__restrict __stream);
+
+extern int ungetc (int __c, FILE *__stream);
+...
+# 885 "/usr/include/stdio.h" 3 4
+extern int __uflow (FILE *);
+extern int __overflow (FILE *, int);
+# 2 "test/files/simple.c" 2
+
+int main() {
+    int num;
+```
+
 (2) **Lexing**
 
 The main task of the lexer is to read in the program as a string and convert it to the underlying token of the language. Depending on the compiler design this can be done in one step with parsing.

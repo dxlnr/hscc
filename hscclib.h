@@ -1,5 +1,5 @@
 /*
- *  HSCC C Compiler Library
+ *  HSCC C Compiler: Library
  * 
 */
 
@@ -19,7 +19,12 @@ int cc_run_file(cc_state_t *s, const char *fn);
 cc_state_t *cc_init(void);
 /* free the compilation context */
 void cc_delete(cc_state_t *s);
-/* compile a C source file */
+
+/* Compile a C source file. 
+ *
+ * Main function for the actual compiler:
+ * preprocessor -> parser -> codegen.
+ */
 int cc_compile(cc_state_t *s);
 
 #endif

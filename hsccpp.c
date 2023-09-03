@@ -1,5 +1,5 @@
 /*
- *  HSCC: C Compiler Preprocessor
+ *  HSCC: C Compiler: Preprocessing and Lexing.
  * 
 */
 
@@ -19,4 +19,18 @@ t_tokens_t *tok_add(const char *str, int len)
 /* finds a tokens str. */
 const char *get_tok_str(int v)
 {
+}
+
+int cc_rm_comments() {
+  return 0;
+}
+
+void cc_preprocess(cc_state_t *s) {
+  file_buffer_t *fb = s->fb;
+
+  printf("Preprocessing: %s\n", &s->fb->fn[0]);
+
+  printf("Preprocessing: %s\n", fb->buf_ptr);
+  printf("Preprocessing: %s\n", fb->buf_end);
+  printf("Preprocessing: %s\n", &fb->buf[0]);
 }

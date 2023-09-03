@@ -12,6 +12,7 @@
 #include <stdint.h>
 
 #include <fcntl.h>
+#include <setjmp.h>
 
 /* parse_args return codes: */
 #define ARG_HELP        1
@@ -82,6 +83,8 @@ typedef struct cc_state {
 
   unsigned char filetype; 
 
+  /* error handling */
+  jmp_buf err_jmp_buf;
   /* input file buffer */
   file_buffer_t *fb;
   /* output file for preprocessing */
@@ -97,5 +100,8 @@ typedef struct cc_state {
 
 /* hsccpp */
 const char* get_token_str(int id);
+
+/* Runs the preprocessor */
+void cc_preprocess(cc_state_t *s);
 
 #endif
