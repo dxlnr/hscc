@@ -45,13 +45,15 @@ int main(int argc, char **argv)
     file_spec_t *f = state->files[n];
     state->filetype = f->type;
     if (state->verbose == 1)
-      printf("-> %s\n", f->name);
+      printf("compiling -> %s\n", f->name);
     if (!ff)
       ff = f->name;
     if (cc_run_file(state, f->name) < 0)
       ret = 1;
     done = ret || ++n >= state->fc;
   } while (!done && (state->output_type != CC_OUTPUT_OBJ ));
+
+  /* ret = cc_compile(state, fn, fd); */
 
   return 0;
 }

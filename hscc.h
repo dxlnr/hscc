@@ -17,6 +17,11 @@
 
 #define CC_OUTPUT_OBJ   1 /* object file */
 
+/* s->filetype: */
+#define FILE_TYPE_NONE   0
+#define FILE_TYPE_C      1
+#define FILE_TYPE_ASM    2
+
 typedef struct file_buffer {
   uint8_t *buf_ptr;
   uint8_t *buf_end;

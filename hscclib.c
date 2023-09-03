@@ -126,14 +126,40 @@ int parse_args(cc_state_t *s, int *argc, char ***argv) {
   return 0;
 }
 
-
-void write_file_to_buf(cc_state_t *s, const char *fn, int len)
-{
+char *cc_get_file_ext(const char *fn) {
+  for (int i = strlen(fn) - 1; i >= 0; --i) {
+    if (fn[i] == '.') {
+      return (char *)fn + i;
+    }
+  }
+  return NULL;
 }
 
+int write_file_to_buf(cc_state_t *s, const char *fn, int len)
+{
+  FILE *file;
+  file = fopen(fn, "r");
+
+  if (file == NULL) return -1;
+
+  return 0;
+}
 
 int cc_run_file(cc_state_t *s, const char *fn) {
-  return 0;
+  char *ext = cc_get_file_ext(fn);
+  if (ext == NULL) {
+    printf("Error: %s\n", "No file extension.");
+    return -1;
+  }
+  if (!strcmp(ext, ".c") || !strcmp(ext, ".h")) {
+    s->filetype = FILE_TYPE_C;
+  } else if (!strcmp(ext, ".s") || !strcmp(ext, ".S")) {
+    s->filetype = FILE_TYPE_ASM;
+  } else {
+    printf("Error: %s\n", "Unknown file extension.");
+    return -1;
+  }
+  return write_file_to_buf(s, fn, 0);
 }
 
 cc_state_t *cc_init(void) {
