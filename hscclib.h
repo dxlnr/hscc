@@ -20,6 +20,6 @@ cc_state_t *cc_init(void);
 /* free the compilation context */
 void cc_delete(cc_state_t *s);
 /* compile a C source file */
-int cc_compile(cc_state_t *s, const char *fn);
+int cc_compile(cc_state_t *s);
 
 #endif

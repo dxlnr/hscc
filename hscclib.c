@@ -135,12 +135,23 @@ char *cc_get_file_ext(const char *fn) {
   return NULL;
 }
 
-int write_file_to_buf(cc_state_t *s, const char *fn, int len)
+int write_file_to_buf(cc_state_t *s, const char *fn)
 {
-  FILE *file;
-  file = fopen(fn, "r");
+  file_buffer_t *buf = malloc(sizeof(file_buffer_t));
 
-  if (file == NULL) return -1;
+  int fd = open(fn, O_RDONLY);
+  if (fd < 0) {
+    printf("Error: %s\n", "File not found.");
+    return -1;
+  }
+
+  buf->fd = fd;
+  buf->line_num = 1;
+  memcpy(buf->fn, fn, sizeof(buf->fn));
+  buf->buf_end = buf->buf;
+  buf->buf_ptr = buf->buf;
+
+  s->fb = buf;
 
   return 0;
 }
@@ -159,8 +170,14 @@ int cc_run_file(cc_state_t *s, const char *fn) {
     printf("Error: %s\n", "Unknown file extension.");
     return -1;
   }
-  return write_file_to_buf(s, fn, 0);
+  return write_file_to_buf(s, fn);
 }
+
+int cc_compile(cc_state_t *s) {
+  printf("In cc compile.\n");
+  return 0;
+}
+
 
 cc_state_t *cc_init(void) {
   cc_state_t *s = malloc(sizeof(cc_state_t));
@@ -179,7 +196,6 @@ void cc_delete(cc_state_t *s) {
   free(s);
 }
 
-void hscc_free(void *ptr)
-{
-    free(ptr);
+void hscc_free(void *ptr) {
+  free(ptr);
 }

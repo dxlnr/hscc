@@ -16,11 +16,12 @@ static const char show_help[] =
     "  -verbose            Display verbose messages.\n"
 ;
 
-static char *default_out(cc_state_t *s, const char *ffile)
+const char *default_out(cc_state_t *s, const char *ffile)
 {
   char buf[1024];
   char *ext;
   const char *name = "a";
+  return name;
 }
 
 int main(int argc, char **argv)
@@ -53,7 +54,7 @@ int main(int argc, char **argv)
     done = ret || ++n >= state->fc;
   } while (!done && (state->output_type != CC_OUTPUT_OBJ ));
 
-  /* ret = cc_compile(state, fn, fd); */
+  ret = cc_compile(state);
 
   return 0;
 }
