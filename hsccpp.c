@@ -26,11 +26,9 @@ int cc_rm_comments() {
 }
 
 void cc_preprocess(cc_state_t *s) {
-  file_buffer_t *fb = s->fb;
+  while (s->fb->buf_ptr < s->fb->buf_end) {
+    printf("%s\n", s->fb->buf_ptr);
 
-  printf("Preprocessing: %s\n", &s->fb->fn[0]);
-
-  printf("Preprocessing: %s\n", fb->buf_ptr);
-  printf("Preprocessing: %s\n", fb->buf_end);
-  printf("Preprocessing: %s\n", &fb->buf[0]);
+    s->fb->buf_ptr++;
+  }
 }

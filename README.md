@@ -16,7 +16,8 @@ The preprocessor is a tool that processes the source code before it is passed to
 - **File Inclusion**: Include the contents of one file into another.
 - **Conditional Compilation**: Including or excluding parts of the code based on certain conditions using directives like `#if`, `#ifdef`, `#ifndef`, `#else`, `#elif`, and `#endif`.
 
-Example using clang (clang -E)
+Example using clang (`clang -E`)
+
 ```bash
 extern int fputs (const char *__restrict __s, FILE *__restrict __stream);
 
@@ -29,6 +30,7 @@ extern int __overflow (FILE *, int);
 
 int main() {
     int num;
+...
 ```
 
 (2) **Lexing**
@@ -60,7 +62,10 @@ eof             ''                                      Loc=<test/files/simple.c
 
 For the **c** version, run the bash script and provide an input file
 ```bash 
-./run.sh test/files/simple.c
+# Checkout out what it can do for you.
+./run.sh
+# Compile
+./run.sh test/files/simple.c -verbose
 ```
 
 ## Additional Information

@@ -14,6 +14,7 @@ static const char show_help[] =
     "  -o <file>           Place the output into <file>.\n"
     "  -h                  Display available options (-help-hidden for more).\n"
     "  -verbose            Display verbose messages.\n"
+    "  -E                  Output the preprocessing results .\n"
 ;
 
 const char *default_out(cc_state_t *s, const char *ffile)

@@ -63,32 +63,6 @@ static const arg_options_t args_options [] = {
   { NULL,           arg_option_ignored,     0 }
 };
 
-char *read_from_file(char *fname) 
-{
-  FILE *file = NULL;
-  file = fopen(fname, "r");
-
-  if (file == NULL) return NULL;
-
-  fseek(file, 0, SEEK_END);
-  int length = ftell(file);
-  fseek(file, 0, SEEK_SET);
-
-  char *s = malloc(sizeof(char) * (length + 1)); 
-  char c;
-  int i = 0;
-  while( (c = fgetc(file)) != EOF)
-  {
-      s[i] = c;
-      i++;
-  }
-  s[i] = '\0';
-
-  fclose(file);
-
-  return s;
-}
-
 int parse_args(cc_state_t *s, int *argc, char ***argv) {
   int nb_args = *argc;
   int ca = 1;
