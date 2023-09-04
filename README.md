@@ -11,10 +11,10 @@ Preprocessor -> Lexing -> Parsing -> Static Analysis -> Intermediate Representat
 
 The preprocessor is a tool that processes the source code before it is passed to the actual compiler. The primary tasks are:
 
-- Removing Comments: The preprocessor strips out comments from the source code.
-- Macro Expansion: Replace macros with their definitions. Macros are typically defined using the `#define` directive.
-- File Inclusion: Include the contents of one file into another.
-- Conditional Compilation: Including or excluding parts of the code based on certain conditions using directives like `#if`, `#ifdef`, `#ifndef`, `#else`, `#elif`, and `#endif`.
+- **Removing Comments**: The preprocessor strips out comments from the source code.
+- **Macro Expansion**: Replace macros with their definitions. Macros are typically defined using the `#define` directive.
+- **File Inclusion**: Include the contents of one file into another.
+- **Conditional Compilation**: Including or excluding parts of the code based on certain conditions using directives like `#if`, `#ifdef`, `#ifndef`, `#else`, `#elif`, and `#endif`.
 
 Example using clang (clang -E)
 ```bash

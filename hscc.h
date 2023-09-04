@@ -13,6 +13,8 @@
 
 #include <fcntl.h>
 #include <setjmp.h>
+#include <sys/stat.h>
+#include <unistd.h>
 
 /* parse_args return codes: */
 #define ARG_HELP        1

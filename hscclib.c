@@ -137,19 +137,41 @@ char *cc_get_file_ext(const char *fn) {
 
 int write_file_to_buf(cc_state_t *s, const char *fn)
 {
-  file_buffer_t *buf = malloc(sizeof(file_buffer_t));
-
   int fd = open(fn, O_RDONLY);
   if (fd < 0) {
     printf("Error: %s\n", "File not found.");
     return -1;
   }
 
+  struct stat st;
+  if (stat(fn, &st) != 0) {
+    perror("Error: Failed to get file size.");
+    close(fd);
+    return -1;
+  }
+  size_t fsize = st.st_size;
+
+  file_buffer_t *buf = (file_buffer_t *)malloc(sizeof(file_buffer_t) + fsize - 1);
+  if (!buf) {
+    perror("Error: Failed to allocate enough memory.");
+    close(fd);
+    return -1;
+  }
+
   buf->fd = fd;
   buf->line_num = 1;
   memcpy(buf->fn, fn, sizeof(buf->fn));
-  buf->buf_end = buf->buf;
+  buf->buf_end = buf->buf + fsize;
   buf->buf_ptr = buf->buf;
+  /* buf->prev = NULL; */
+
+  ssize_t bytesRead = read(fd, buf->buf, fsize);
+  if (bytesRead != fsize) {
+    perror("Failed to read the entire file.");
+    free(buf);
+    close(fd);
+    return -1;
+  }
 
   s->fb = buf;
 
