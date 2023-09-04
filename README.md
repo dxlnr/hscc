@@ -33,6 +33,11 @@ int main() {
 ...
 ```
 
+An algorithmic outline can be found [here](resources/cpp.algo.pdf). 
+
+For an additional read: [Under the Hood: warp, a fast C and C++ preprocessor](https://engineering.fb.com/2014/03/28/open-source/under-the-hood-warp-a-fast-c-and-c-preprocessor/), which was project done at Meta and is open-source.
+
+
 (2) **Lexing**
 
 The main task of the lexer is to read in the program as a string and convert it to the underlying token of the language. Depending on the compiler design this can be done in one step with parsing.
