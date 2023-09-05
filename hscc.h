@@ -10,6 +10,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <stdint.h>
+#include <ctype.h>
 
 #include <fcntl.h>
 #include <setjmp.h>
@@ -57,10 +58,6 @@ typedef struct file_spec {
   char name[1];
 } file_spec_t;
 
-/* Tokens Table */
-typedef struct t_tokens {
-} t_tokens_t;
-
 
 #define T_IDENT 0x1
 
@@ -75,6 +72,24 @@ typedef enum token_type {
 } token_type_t;
 
 extern const char * const token_str[];
+
+#define TOK_OPERATORS "+-/*%=<>&^|!?"
+#define TOK_DELIMITERS ";(){}[],.:"
+#define TOK_WHITESPACE " \t\n"
+
+/* Single Token */
+typedef struct token {
+  token_type_t tok;
+  char *str; 
+  /* length of the token ptr. fat pointer implemenation. */
+  int ptr_len;
+} token_t;
+
+/* Linked List of Tokens */
+typedef struct tokens {
+  token_t tok;
+  struct tokens * next;
+} tokens_t;
 
 /* Compiler state */
 typedef struct cc_state {
@@ -100,8 +115,12 @@ typedef struct cc_state {
   int fc;
 } cc_state_t;
 
-/* hsccpp */
+/* hsccpp functions */
 const char* get_token_str(int id);
+
+token_t *get_token(cc_state_t *s);
+
+tokens_t *cc_lex_analysis(cc_state_t *s);
 
 /* Runs the preprocessor */
 void cc_preprocess(cc_state_t *s);

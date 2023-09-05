@@ -4,6 +4,15 @@
 */
 #include "hscc.h"
 
+int strin(char **arr, int len, char *s) {
+  for(int i = 0; i < len; ++i) {
+    if(strncmp(arr[i], s, strlen(s)) == 0) {
+      return 1;
+    }
+  }
+  return 0;
+}
+
 void mem_error(const char *msg)
 {
     fprintf(stderr, "%s\n", msg);
