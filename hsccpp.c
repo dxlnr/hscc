@@ -149,6 +149,30 @@ tokens_t *cc_lex_analysis(cc_state_t *s) {
     return tokens;
 }
 
+void run_preprocessing(int tok)
+{
+  switch(tok) {
+    case t_define:
+    case t_include:
+    case t_include_next:
+    case t_ifdef:
+    case t_ifndef:
+    case t_elif:
+    case t_endif:
+    case t_defined:
+    case t_undef:
+    case t_error:
+    case t_warning:
+    case t_line:
+    case t_pragma:
+    default:
+      break;
+    }
+}
+
+uint8_t *parse_comment(uint8_t *p){
+}
+
 void show_tokens(tokens_t *tokens) {
   while (tokens != NULL) {
     stdout_token(&tokens->tok);
@@ -156,11 +180,32 @@ void show_tokens(tokens_t *tokens) {
   }
 }
 
+static int get_next_ch(file_buffer_t *fb)
+{
+  int ch = *fb->buf_ptr;
+  /* end of buffer/file handling */
+  if (ch == CH_EOB || fb->buf_ptr >= fb->buf_end) {
+    return -1;
+  }
+  fb->buf_ptr++;
+  return ch;
+}
+
 void cc_preprocess(cc_state_t *s) {
+  uint8_t *p, *p1;
+  p = s->fb->buf_ptr;
+
+  for (;;) {
+    int c = get_next_ch(s->fb);
+    if (c == -1) {
+      break;
+    }
+    printf("%c", c);
+  }
 
   /* while (s->fb->buf_ptr < s->fb->buf_end) { */
-  /*   /1* printf("%s\n", s->fb->buf_ptr); *1/ */
+  /*   printf("%s\n", s->fb->buf_ptr); */
   /*   s->fb->buf_ptr++; */
   /* } */
-  tokens_t *tokens = cc_lex_analysis(s);
+  /* tokens_t *tokens = cc_lex_analysis(s); */
 }

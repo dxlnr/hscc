@@ -71,6 +71,8 @@ typedef enum token_type {
   ,t_numeric_const
 } token_type_t;
 
+#define CH_EOB  '\\'  /* end of buffer or '\0' char in file */
+
 extern const char * const token_str[];
 
 #define TOK_OPERATORS "+-/*%=<>&^|!?"
