@@ -29,7 +29,7 @@ int main(int argc, char **argv)
 {
   cc_state_t *state;
   const char *ff;
-  int ret, done, n = 0;
+  int fd, ret, done, n = 0;
 
   state = cc_init();
 
@@ -50,12 +50,14 @@ int main(int argc, char **argv)
       printf("compiling -> %s\n", f->name);
     if (!ff)
       ff = f->name;
-    if (cc_run_file(state, f->name) < 0)
+    fd = cc_add_file(state, f->name);
+    if (fd < 0)
       ret = 1;
+
+    ret = cc_compile(state, ff, fd); 
     done = ret || ++n >= state->fc;
   } while (!done && (state->output_type != CC_OUTPUT_OBJ ));
 
-  ret = cc_compile(state);
 
   return 0;
 }

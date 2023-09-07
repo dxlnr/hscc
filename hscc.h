@@ -27,6 +27,8 @@
 #define FILE_TYPE_C      1
 #define FILE_TYPE_ASM    2
 
+#define IO_BUF_SIZE 8192
+
 typedef struct file_buffer {
   /* buf_ptr equals buf_end : the buffer is considered empty. */
   uint8_t *buf_ptr;
@@ -104,6 +106,7 @@ typedef struct cc_state {
 
   /* error handling */
   jmp_buf err_jmp_buf;
+  int nb_errors;
   /* input file buffer */
   file_buffer_t *fb;
   /* output file for preprocessing */
@@ -125,6 +128,6 @@ token_t *get_token(cc_state_t *s);
 tokens_t *cc_lex_analysis(cc_state_t *s);
 
 /* Runs the preprocessor */
-void cc_preprocess(cc_state_t *s);
+void cc_preprocess(cc_state_t *s, file_buffer_t *file);
 
 #endif

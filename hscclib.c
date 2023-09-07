@@ -158,10 +158,28 @@ int write_file_to_buf(cc_state_t *s, const char *fn)
 
   s->fb = buf;
 
-  return 0;
+  return fd;
 }
 
-int cc_run_file(cc_state_t *s, const char *fn) {
+file_buffer_t *open_buf(cc_state_t *s, const char *fn, int len) {
+  file_buffer_t* buf;
+  struct file_buffer *file;
+  int buflen = len ? len : IO_BUF_SIZE;
+
+  buf = malloc(sizeof(file_buffer_t) + buflen);
+  buf->buf_ptr = buf->buf;
+  buf->buf_end = buf->buf+ len;
+  buf->buf_end[0] = CH_EOB;    
+  memcpy(buf->fn, fn, sizeof(buf->fn));
+  buf->line_num = 1;
+  buf->fd = -1;
+  buf->prev = file;
+  file = buf;
+
+  return file;
+}
+
+int cc_add_file(cc_state_t *s, const char *fn) {
   char *ext = cc_get_file_ext(fn);
   if (ext == NULL) {
     printf("Error: %s\n", "No file extension.");
@@ -178,11 +196,23 @@ int cc_run_file(cc_state_t *s, const char *fn) {
   return write_file_to_buf(s, fn);
 }
 
-int cc_compile(cc_state_t *s) {
+int cc_compile(cc_state_t *s, const char *str, int fd) {
   printf("In cc compile for %s\n", s->fb->fn);
+  printf("In cc compile for %s\n", str);
+  file_buffer_t *file;
 
   if (setjmp(s->err_jmp_buf) == 0) {
-    cc_preprocess(s);
+    s->nb_errors = 0;
+
+    if (fd == -1) {
+      int len = strlen(str);
+      file = open_buf(s, "<string>", len);
+      memcpy(file->buf, str, len);
+    } else {
+        file = open_buf(s, str, 0);
+        file->fd = fd;
+    }
+    cc_preprocess(s, file);
   }
 
   return 0;
