@@ -146,7 +146,6 @@ int write_file_to_buf(cc_state_t *s, const char *fn)
   memcpy(buf->fn, fn, sizeof(buf->fn));
   buf->buf_end = buf->buf + fsize;
   buf->buf_ptr = buf->buf;
-  /* buf->prev = NULL; */
 
   ssize_t bytesRead = read(fd, buf->buf, fsize);
   if (bytesRead != fsize) {
@@ -155,28 +154,24 @@ int write_file_to_buf(cc_state_t *s, const char *fn)
     close(fd);
     return -1;
   }
-
   s->fb = buf;
 
   return fd;
 }
 
-file_buffer_t *open_buf(cc_state_t *s, const char *fn, int len) {
+void open_buf(cc_state_t *s, const char *fn, int len) {
   file_buffer_t* buf;
-  struct file_buffer *file;
   int buflen = len ? len : IO_BUF_SIZE;
 
   buf = malloc(sizeof(file_buffer_t) + buflen);
   buf->buf_ptr = buf->buf;
-  buf->buf_end = buf->buf+ len;
+  buf->buf_end = buf->buf + len;
   buf->buf_end[0] = CH_EOB;    
   memcpy(buf->fn, fn, sizeof(buf->fn));
   buf->line_num = 1;
   buf->fd = -1;
-  buf->prev = file;
-  file = buf;
-
-  return file;
+  /* buf->prev = file; */
+  /* file = buf; */
 }
 
 int cc_add_file(cc_state_t *s, const char *fn) {
@@ -198,21 +193,11 @@ int cc_add_file(cc_state_t *s, const char *fn) {
 
 int cc_compile(cc_state_t *s, const char *str, int fd) {
   printf("In cc compile for %s\n", s->fb->fn);
-  printf("In cc compile for %s\n", str);
-  file_buffer_t *file;
 
   if (setjmp(s->err_jmp_buf) == 0) {
     s->nb_errors = 0;
 
-    if (fd == -1) {
-      int len = strlen(str);
-      file = open_buf(s, "<string>", len);
-      memcpy(file->buf, str, len);
-    } else {
-        file = open_buf(s, str, 0);
-        file->fd = fd;
-    }
-    cc_preprocess(s, file);
+    cc_preprocess(s);
   }
 
   return 0;

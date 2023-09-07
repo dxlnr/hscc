@@ -128,6 +128,6 @@ token_t *get_token(cc_state_t *s);
 tokens_t *cc_lex_analysis(cc_state_t *s);
 
 /* Runs the preprocessor */
-void cc_preprocess(cc_state_t *s, file_buffer_t *file);
+void cc_preprocess(cc_state_t *s);
 
 #endif

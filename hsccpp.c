@@ -191,24 +191,36 @@ static int get_next_ch(file_buffer_t *fb)
   return ch;
 }
 
-void get_next_token() {
-  int c;
+void get_next_token(file_buffer_t *file) {
+  int c, tok;
   uint8_t *p;
+  p = file->buf_ptr;
   
-redo_no_start:
+redo_start:
   c = *p;
   switch (c) {
     case ' ':
     case '\t':
+      p++;
+      goto redo_start;
     case '\f':
     case '\v':
     case '\r':
-        p++;
-        goto redo_no_start;
+      p++;
+      goto redo_start;
     case '\\':
       break;
     case '\n':
+      file->line_num++;
+      p++;
     case '#':
+      p++;
+      if (*p == '#') {
+        tok = hashhash;
+        p++;
+      } else {
+        tok = hash;
+      }
 
     case '(':
     case ')':
@@ -239,7 +251,8 @@ redo_no_start:
     case 'Q': case 'R': case 'S': case 'T':
     case 'U': case 'V': case 'W': case 'X':
     case 'Y': case 'Z': 
-    case '_':
+    case '_': 
+    
 
     case 'L':
 
@@ -268,17 +281,20 @@ redo_no_start:
   }
 }
 
-void cc_preprocess(cc_state_t *s, file_buffer_t *file) {
-  uint8_t *p, *p1;
-  p = s->fb->buf_ptr;
+void cc_preprocess(cc_state_t *s) {
 
   for (;;) {
     int c = get_next_ch(s->fb);
     if (c == -1) {
+      printf("EOF\n");
       break;
     }
     printf("%c", c);
+
+    get_next_token(s->fb);
   }
+
+  /* printf("\n %d lines\n", file->line_num); */
 
   /* while (s->fb->buf_ptr < s->fb->buf_end) { */
   /*   printf("%s\n", s->fb->buf_ptr); */
