@@ -75,7 +75,17 @@ typedef enum token_type {
 
 #define CH_EOB  '\\'  /* end of buffer or '\0' char in file */
 
-extern const char * const token_str[];
+// LUT.
+typedef struct {
+    const char *str;
+    token_type_t id;
+} token_kw_t;
+
+#define TOK(id, str) {str, id},
+static token_kw_t token_str[] = {
+  #include "include/toks.h"
+};
+#undef TOK
 
 #define TOK_OPERATORS "+-/*%=<>&^|!?"
 #define TOK_DELIMITERS ";(){}[],.:"

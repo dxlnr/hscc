@@ -18,19 +18,17 @@ void show_tokens(tokens_t *tokens) {
   }
 }
 
-const char * const token_str[] = {
-  #define TOK(id, str) str,
-    #include "include/toks.h"
-  #undef TOK
-};
+token_type_t get_tok_expr(const char *str, int ptr_len) {
+  for (int i = 0; token_str[i].str != NULL; i++) {
+    if (strncmp(token_str[i].str, str, ptr_len) == 0) {
+      return token_str[i].id;
+    }
+  }
+  return t_eof;
+}
 
 /* find a token and add it to table. */
 token_t *tok_add(const char *str, int len)
-{
-}
-
-/* finds a tokens str. */
-const char *get_tok_str(int v)
 {
 }
 
@@ -119,15 +117,14 @@ redo_start:
       file->line_num++;
       break;
     case '#':
-      printf("hash\n");
       p++;
       if (*p == '#') {
+        p++;
         return assign_tok(hashhash, (char *) pstart, 2);
       } else {
         return assign_tok(hash, (char *) pstart, 1);
       }
       break;
-
     case '(':
     case ')':
     case '[':
@@ -139,6 +136,8 @@ redo_start:
     case ':':
     case '?':
     case '~': 
+      return assign_tok(get_tok_expr((char *) pstart, 1), (char *) pstart, 1);
+      break;
 
     case '$':
 
@@ -199,10 +198,10 @@ void cc_preprocess(cc_state_t *s) {
 
     int c = get_next_ch(s->fb);
     if (c == -1) {
-      printf("EOF\n");
+      if (s->verbose)
+        printf("Lexing finished. EOF.\n");
       break;
     }
   }
   show_tokens(tokens);
-
 }

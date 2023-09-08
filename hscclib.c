@@ -203,7 +203,6 @@ int cc_compile(cc_state_t *s, const char *str, int fd) {
   return 0;
 }
 
-
 cc_state_t *cc_init(void) {
   cc_state_t *s = malloc(sizeof(cc_state_t));
 
