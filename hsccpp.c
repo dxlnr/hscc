@@ -73,7 +73,6 @@ void run_preprocessing(int tok)
 uint8_t *parse_comment(uint8_t *p){
 }
 
-
 token_t* assign_tok(token_type_t tok, char *str, int len) {
   token_t *token = (token_t *) malloc(sizeof(token_t));
   if (token == NULL)
@@ -103,7 +102,7 @@ token_t *get_next_token(file_buffer_t *file) {
   p = file->buf_ptr;
   pstart = p;
   
-redo_start:
+/* redo_start: */
   c = *p;
   switch (c) {
     case ' ':
@@ -156,6 +155,14 @@ redo_start:
     case 'U': case 'V': case 'W': case 'X':
     case 'Y': case 'Z': 
     case '_': 
+    is_identifer:
+      p++;
+      if (isalnum(*p) || *p == '_')
+        goto is_identifer;
+
+      token_t *t = assign_tok(t_ident, (char *) pstart, p - pstart);
+      file->buf_ptr = p;
+      return t;
 
     case 'L':
 
