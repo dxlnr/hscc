@@ -79,3 +79,4 @@ For the **c** version, run the bash script and provide an input file
 - [Crafting Interpreters](https://craftinginterpreters.com/) by Robert Nystrom is a great source.
 - [TinyCC](https://github.com/TinyCC/tinycc): The Smallest ANSI C compiler.
 - [pycparser](https://github.com/eliben/pycparser): Complete C99 parser in pure Python.
+- [Compiler Programming](https://www.youtube.com/watch?v=wWTon5J2uhs&list=PLmV5I2fxaiCIZVTLzofsocka2LvWBFvBa) feat. Jonathan Blow. Just extensive

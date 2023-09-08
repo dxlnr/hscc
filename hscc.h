@@ -61,7 +61,7 @@ typedef struct file_spec {
 } file_spec_t;
 
 
-#define T_IDENT 0x1
+#define T_IDENT 256
 
 typedef enum token_type {
   t_eof = T_IDENT - 1
