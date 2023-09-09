@@ -8,7 +8,7 @@
 void stdout_token(token_t *token) {
   if (token != NULL)
     /* printf("  %-16s '%.*s'\n", token_str[token->tok], token->ptr_len, token->str); */
-    printf("  %-16d '%.*s'\n", token->tok, token->ptr_len, token->str);
+    printf("  %-16d '%.*s' %d\n", token->tok, token->ptr_len, token->str, token->line_num);
 }
 
 void show_tokens(tokens_t *tokens) {
@@ -73,13 +73,14 @@ void run_preprocessing(int tok)
 uint8_t *parse_comment(uint8_t *p){
 }
 
-token_t* assign_tok(token_type_t tok, char *str, int len) {
+token_t* assign_tok(token_type_t tok, char *str, int len, int line_num) {
   token_t *token = (token_t *) malloc(sizeof(token_t));
   if (token == NULL)
     exit(1);
   token->tok = tok;
   token->str = str;
   token->ptr_len = len;
+  token->line_num = line_num;
 
   return token;
 }
@@ -102,6 +103,7 @@ token_t *get_next_token(file_buffer_t *file) {
   p = file->buf_ptr;
   pstart = p;
   
+  int ccc = 0;
 /* redo_start: */
   c = *p;
   switch (c) {
@@ -119,9 +121,9 @@ token_t *get_next_token(file_buffer_t *file) {
       p++;
       if (*p == '#') {
         p++;
-        return assign_tok(hashhash, (char *) pstart, 2);
+        return assign_tok(hashhash, (char *) pstart, 2, file->line_num);
       } else {
-        return assign_tok(hash, (char *) pstart, 1);
+        return assign_tok(hash, (char *) pstart, 1, file->line_num);
       }
       break;
     case '(':
@@ -135,10 +137,12 @@ token_t *get_next_token(file_buffer_t *file) {
     case ':':
     case '?':
     case '~': 
-      return assign_tok(get_tok_expr((char *) pstart, 1), (char *) pstart, 1);
+      return assign_tok(get_tok_expr((char *) pstart, 1), 
+                        (char *) pstart, 1, file->line_num);
       break;
 
     case '$':
+      break;
 
     case 'a': case 'b': case 'c': case 'd':
     case 'e': case 'f': case 'g': case 'h':
@@ -160,20 +164,63 @@ token_t *get_next_token(file_buffer_t *file) {
       if (isalnum(*p) || *p == '_')
         goto is_identifer;
 
-      token_t *t = assign_tok(t_ident, (char *) pstart, p - pstart);
       file->buf_ptr = p;
-      return t;
+      return assign_tok(t_ident, (char *) pstart, p - pstart, file->line_num);
 
     case 'L':
+      p++;
+      if (*p == '\'' || *p == '\"') {
+        goto is_string_const;
+      } else {
+        goto is_identifer;
+      }
 
     case '0': case '1': case '2': case '3':
     case '4': case '5': case '6': case '7':
     case '8': case '9':
+      if (c == '0') {
+        p++;
+        if (*p == 'x' || *p == 'X' ||
+            *p == 'b' || *p == 'B' || 
+            *p == 'b' || *p == 'B' ||
+            *p == 'e' || *p == 'E' ||
+            *p == '.') {
+          goto is_number;
+        } else if (*p == ' ') {
+          return assign_tok(t_numeric_const, 
+                            (char *) pstart, p - pstart - 1, file->line_num);
+        } else {
+          return assign_tok(t_numeric_const, 
+                            (char *) pstart, p - pstart, file->line_num);
+        }
+      }     
+    is_number:
+      p++;
+      if (isdigit(*p))
+        goto is_number;
 
+      file->buf_ptr = p;
+      return assign_tok(t_numeric_const, 
+                        (char *) pstart, p - pstart, file->line_num);
     case '.':
+      break;
 
     case '\'':
     case '\"':
+    is_string_const:
+      p++;
+      if (*p != '\'' && *p != '\"') {
+        goto is_string_const;
+      }
+
+      file->buf_ptr = p;
+      if (*pstart == 'L') {
+        return assign_tok(t_wide_string_literal, 
+                          (char *) pstart, p - pstart + 1, file->line_num);
+      } else {
+        return assign_tok(t_string_literal, 
+                          (char *) pstart, p - pstart + 1, file->line_num);  
+      }
 
     case '<':
     case '>':

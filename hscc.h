@@ -70,6 +70,10 @@ typedef enum token_type {
 #undef TOK
   ,t_ident
   ,t_string_literal
+  ,t_wide_string_literal    /*  L"foo"  */
+  ,t_utf8_string_literal    /*  u8"foo" */
+  ,t_utf16_string_literal   /*  u"foo"  */
+  ,t_utf32_string_literal   /*  U"foo"  */
   ,t_numeric_const
 } token_type_t;
 
@@ -87,16 +91,14 @@ static token_kw_t token_str[] = {
 };
 #undef TOK
 
-#define TOK_OPERATORS "+-/*%=<>&^|!?"
-#define TOK_DELIMITERS ";(){}[],.:"
-#define TOK_WHITESPACE " \t\n"
-
 /* Single Token */
 typedef struct token {
   token_type_t tok;
   char *str; 
   /* length of the token ptr. fat pointer implemenation. */
   int ptr_len;
+  /* line number */
+  int line_num;
 } token_t;
 
 /* Linked List of Tokens */
@@ -129,6 +131,26 @@ typedef struct cc_state {
   /* number of files */
   int fc;
 } cc_state_t;
+
+/* hsccpp 
+ *
+ * Checking for characters such as whitespace, identifiers, and numbers.
+ * */
+static inline int is_space(int ch) {
+    return ch == ' ' || ch == '\t' || ch == '\v' || ch == '\f' || ch == '\r';
+}
+static inline int isid(int c) {
+    return (c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z') || c == '_';
+}
+static inline int isnum(int c) {
+    return c >= '0' && c <= '9';
+}
+static inline int isoct(int c) {
+    return c >= '0' && c <= '7';
+}
+static inline int toup(int c) {
+    return (c >= 'a' && c <= 'z') ? c - 'a' + 'A' : c;
+}
 
 /* hsccpp functions */
 const char* get_token_str(int id);

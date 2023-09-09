@@ -5,6 +5,7 @@ int main() {
     printf("Enter an integer: ");
     scanf("%d", &num);
 
+    char *s_tests = L"Hello World";
     num = num + 1;
     // True if the num is even
     if(num % 2 == 0)
