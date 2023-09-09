@@ -1,6 +1,6 @@
 /*
  *  HSCC: C Compiler: Preprocessing and Lexing.
- * 
+ *
 */
 
 #include "hscc.h"
@@ -8,7 +8,7 @@
 void stdout_token(token_t *token) {
   if (token != NULL)
     /* printf("  %-16s '%.*s'\n", token_str[token->tok], token->ptr_len, token->str); */
-    printf("  %-16d '%.*s' %d\n", token->tok, token->ptr_len, token->str, token->line_num);
+    printf("  %-16d %-25.*s %d\n", token->tok, token->ptr_len, token->str, token->line_num);
 }
 
 void show_tokens(tokens_t *tokens) {
@@ -98,12 +98,11 @@ static int get_next_ch(file_buffer_t *fb)
 
 token_t *get_next_token(file_buffer_t *file) {
   int c;
-
+  token_t *t;
   uint8_t *p, *pstart;
   p = file->buf_ptr;
   pstart = p;
   
-  int ccc = 0;
 /* redo_start: */
   c = *p;
   switch (c) {
@@ -125,7 +124,6 @@ token_t *get_next_token(file_buffer_t *file) {
       } else {
         return assign_tok(hash, (char *) pstart, 1, file->line_num);
       }
-      break;
     case '(':
     case ')':
     case '[':
@@ -139,8 +137,6 @@ token_t *get_next_token(file_buffer_t *file) {
     case '~': 
       return assign_tok(get_tok_expr((char *) pstart, 1), 
                         (char *) pstart, 1, file->line_num);
-      break;
-
     case '$':
       break;
 
@@ -164,8 +160,8 @@ token_t *get_next_token(file_buffer_t *file) {
       if (isalnum(*p) || *p == '_')
         goto is_identifer;
 
-      file->buf_ptr = p;
-      return assign_tok(t_ident, (char *) pstart, p - pstart, file->line_num);
+      file->buf_ptr = --p;
+      return assign_tok(t_ident, (char *) pstart, p - pstart + 1, file->line_num);
 
     case 'L':
       p++;
@@ -203,7 +199,8 @@ token_t *get_next_token(file_buffer_t *file) {
       return assign_tok(t_numeric_const, 
                         (char *) pstart, p - pstart, file->line_num);
     case '.':
-      break;
+      return assign_tok(period, 
+                        (char *) pstart, 1, file->line_num);
 
     case '\'':
     case '\"':
@@ -223,17 +220,56 @@ token_t *get_next_token(file_buffer_t *file) {
       }
 
     case '<':
+      p++;
+      if (*p == '<') {
+        p++;
+        if (*p == '=') {
+          t = assign_tok(lesslessequal, (char *) pstart, 3, file->line_num);
+        } else {
+          t = assign_tok(lessless, (char *) pstart, 2, file->line_num);
+        }
+      } else if (*p == '=') {
+        p++;
+        if (*p == '>') {
+          t = assign_tok(spaceship, (char *) pstart, 3, file->line_num);
+        } else {
+          t = assign_tok(lessequal, (char *) pstart, 2, file->line_num);
+        }
+      } else {
+        t = assign_tok(less, (char *) pstart, 1, file->line_num);
+      }
+      file->buf_ptr = --p;
+      return t;
+    
     case '>':
     case '&':
     case '|':
     case '+':
     case '-':
+    case '*':
+    case '%':
+    case '^':
+    case '!':
+    case '=':
+      break;
 
     /* comments or operator */
     case '/':
+      p++;
+      if (*p == '/' || *p == '*') {
+        p++;
+        while (*p != '\n' && *p != '\0') {
+          p++;
+        }
+        file->buf_ptr = p;
+        break;
+      } else {
+        return assign_tok(get_tok_expr((char *) pstart, 1), 
+                          (char *) pstart, 1, file->line_num);
+      }
 
     default:
-      printf("(char) %c\n", c);
+      printf("Unknown token: %c\n", c);
       p++;
       break;
   }
