@@ -97,13 +97,12 @@ static int get_next_ch(file_buffer_t *fb)
 }
 
 token_t *get_next_token(file_buffer_t *file) {
-  int c;
+  int c, tl;
   token_t *t;
   uint8_t *p, *pstart;
   p = file->buf_ptr;
   pstart = p;
   
-/* redo_start: */
   c = *p;
   switch (c) {
     case ' ':
@@ -184,7 +183,7 @@ token_t *get_next_token(file_buffer_t *file) {
           goto is_number;
         } else if (*p == ' ') {
           return assign_tok(t_numeric_const, 
-                            (char *) pstart, p - pstart - 1, file->line_num);
+                            (char *) pstart, p - pstart, file->line_num);
         } else {
           return assign_tok(t_numeric_const, 
                             (char *) pstart, p - pstart, file->line_num);
@@ -195,9 +194,9 @@ token_t *get_next_token(file_buffer_t *file) {
       if (isdigit(*p))
         goto is_number;
 
-      file->buf_ptr = p;
+      file->buf_ptr = --p;
       return assign_tok(t_numeric_const, 
-                        (char *) pstart, p - pstart, file->line_num);
+                        (char *) pstart, p - pstart + 1, file->line_num);
     case '.':
       return assign_tok(period, 
                         (char *) pstart, 1, file->line_num);
@@ -220,38 +219,52 @@ token_t *get_next_token(file_buffer_t *file) {
       }
 
     case '<':
-      p++;
-      if (*p == '<') {
-        p++;
-        if (*p == '=') {
-          t = assign_tok(lesslessequal, (char *) pstart, 3, file->line_num);
-        } else {
-          t = assign_tok(lessless, (char *) pstart, 2, file->line_num);
-        }
-      } else if (*p == '=') {
-        p++;
-        if (*p == '>') {
-          t = assign_tok(spaceship, (char *) pstart, 3, file->line_num);
-        } else {
-          t = assign_tok(lessequal, (char *) pstart, 2, file->line_num);
-        }
-      } else {
-        t = assign_tok(less, (char *) pstart, 1, file->line_num);
-      }
-      file->buf_ptr = --p;
-      return t;
-    
     case '>':
+      p++;
+      if (*p == c) {
+        p++;
+        file->buf_ptr = p;
+        if (*p == '=') {
+          tl = 3;
+        } else tl = 2;
+      } else if (*p == '=') {
+        file->buf_ptr = p;
+        tl = 2;
+      } else tl = 1;
+      return assign_tok(get_tok_expr((char *) pstart, tl) , 
+                                     (char *) pstart, tl, file->line_num);
+
     case '&':
     case '|':
     case '+':
+      p++;
+      if (*p == c || *p == '=') {
+        file->buf_ptr = p;
+        tl = 2;
+      } else tl = 1;
+      return assign_tok(get_tok_expr((char *) pstart, tl) , 
+                                     (char *) pstart, tl, file->line_num);
     case '-':
+      p++;
+      if (*p == c || *p == '=' || *p == '>') {
+        file->buf_ptr = p;
+        tl = 2;
+      } else tl = 1;
+      return assign_tok(get_tok_expr((char *) pstart, tl) , 
+                                     (char *) pstart, tl, file->line_num);
     case '*':
     case '%':
     case '^':
     case '!':
     case '=':
-      break;
+    is_div_operator:
+      p++;
+      if (*p == '=') {
+        file->buf_ptr = p;
+        tl = 2;
+      } else tl = 1;
+      return assign_tok(get_tok_expr((char *) pstart, tl) , 
+                                     (char *) pstart, tl, file->line_num);
 
     /* comments or operator */
     case '/':
@@ -263,13 +276,10 @@ token_t *get_next_token(file_buffer_t *file) {
         }
         file->buf_ptr = p;
         break;
-      } else {
-        return assign_tok(get_tok_expr((char *) pstart, 1), 
-                          (char *) pstart, 1, file->line_num);
-      }
-
+      } else 
+        goto is_div_operator;
+        
     default:
-      printf("Unknown token: %c\n", c);
       p++;
       break;
   }
