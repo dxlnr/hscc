@@ -299,9 +299,14 @@ void cc_preprocess(cc_state_t *s) {
     int c = get_next_ch(s->fb);
     if (c == -1) {
       if (s->verbose)
-        printf("Lexing finished. EOF.\n");
+        printf("(v) Lexing finished. EOF.\n");
       break;
     }
   }
-  show_tokens(tokens);
+  if (s->verbose) show_tokens(tokens);
+
+  if (s->dump_tokens) {
+    show_tokens(tokens);
+    exit(0);
+  }
 }

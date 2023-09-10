@@ -7,14 +7,16 @@
 #include "hscclib.h"
 
 static const char show_help[] =
-    "HSCC C Compiler "" \n"
-    "\n"
-    "Usage: hscc [options...] [-o outfile] [-c] input file(s)...\n"
-    "General options:\n"
-    "  -o <file>           Place the output into <file>.\n"
-    "  -h                  Display available options (-help-hidden for more).\n"
-    "  -verbose            Display verbose messages.\n"
-    "  -E                  Output the preprocessing results .\n"
+  "HSCC C Compiler "" \n"
+  "\n"
+  "Usage: hscc [options...] [-o outfile] [-c] input file(s)...\n"
+  "General options:\n"
+  "  -o <file>           Place the output into <file>.\n"
+  "  -h                  Display available options (-help-hidden for more).\n"
+  "  -verbose            Display verbose messages.\n"
+  "  -E                  Output the preprocessing results .\n"
+  "  -dump-ast           Dump the AST tree.\n"
+  "  -dump-tokens        Dump the tokens.\n"
 ;
 
 const char *default_out(cc_state_t *s, const char *ffile)
@@ -47,7 +49,7 @@ int main(int argc, char **argv)
     file_spec_t *f = state->files[n];
     state->filetype = f->type;
     if (state->verbose == 1)
-      printf("compiling -> %s\n", f->name);
+      printf("(v) Next file to compile: %s\n", f->name);
     if (!ff)
       ff = f->name;
     fd = cc_add_file(state, f->name);
@@ -57,7 +59,6 @@ int main(int argc, char **argv)
     ret = cc_compile(state, ff, fd); 
     done = ret || ++n >= state->fc;
   } while (!done && (state->output_type != CC_OUTPUT_OBJ ));
-
 
   return 0;
 }

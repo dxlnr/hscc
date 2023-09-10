@@ -13,6 +13,10 @@ int strin(char **arr, int len, char *s) {
   return 0;
 }
 
+void hscc_free(void *ptr) {
+  free(ptr);
+}
+
 void mem_error(const char *msg)
 {
     fprintf(stderr, "%s\n", msg);
@@ -40,6 +44,17 @@ static void dynarray(void* ptab, int *sptr, void *data)
   *sptr = nb;
 }
 
+static void dynarray_reset(void *pp, int *n)
+{
+  void **p;
+  for (p = *(void***)pp; *n; ++p, --*n)
+    if (*p)
+      hscc_free(*p);
+  hscc_free(*(void**)pp);
+  *(void**)pp = NULL;
+}
+
+
 static void args_parser_add_file(cc_state_t *s, const char* fn, int filetype)
 {
   struct file_spec *f = malloc(sizeof *f + strlen(fn));
@@ -55,12 +70,12 @@ typedef struct arg_options {
 } arg_options_t;
 
 enum {
-  arg_option_ignored = 0,
-  arg_option_help,
-  arg_option_verbose,
-  arg_option_o,
-  arg_option_dump_ast,
-  arg_option_dump_tokens,
+  arg_option_ignored      = 0,
+  arg_option_help         = 1,
+  arg_option_verbose      = 2,
+  arg_option_o            = 3,
+  arg_option_dump_ast     = 4,
+  arg_option_dump_tokens  = 5,
 };
 
 static const arg_options_t args_options [] = {
@@ -104,7 +119,7 @@ int parse_args(cc_state_t *s, int *argc, char ***argv) {
     ++ca;
   }
   if (s->verbose) {
-    printf("files to compile: %d \n", s->fc);
+    printf("(v) Files specified for compilation: %d\n", s->fc);
   }
   return 0;
 }
@@ -159,21 +174,6 @@ int write_file_to_buf(cc_state_t *s, const char *fn)
   return fd;
 }
 
-void open_buf(cc_state_t *s, const char *fn, int len) {
-  file_buffer_t* buf;
-  int buflen = len ? len : IO_BUF_SIZE;
-
-  buf = malloc(sizeof(file_buffer_t) + buflen);
-  buf->buf_ptr = buf->buf;
-  buf->buf_end = buf->buf + len;
-  buf->buf_end[0] = CH_EOB;    
-  memcpy(buf->fn, fn, sizeof(buf->fn));
-  buf->line_num = 1;
-  buf->fd = -1;
-  /* buf->prev = file; */
-  /* file = buf; */
-}
-
 int cc_add_file(cc_state_t *s, const char *fn) {
   char *ext = cc_get_file_ext(fn);
   if (ext == NULL) {
@@ -192,19 +192,18 @@ int cc_add_file(cc_state_t *s, const char *fn) {
 }
 
 int cc_compile(cc_state_t *s, const char *str, int fd) {
-  printf("In cc compile for %s\n", s->fb->fn);
 
   if (setjmp(s->err_jmp_buf) == 0) {
     s->nb_errors = 0;
 
     cc_preprocess(s);
   }
-
   return 0;
 }
 
 cc_state_t *cc_init(void) {
   cc_state_t *s = malloc(sizeof(cc_state_t));
+  if (!s) return NULL;
 
   s->files = NULL;
   s->verbose = 0;
@@ -218,8 +217,4 @@ cc_state_t *cc_init(void) {
 
 void cc_delete(cc_state_t *s) {
   free(s);
-}
-
-void hscc_free(void *ptr) {
-  free(ptr);
 }
