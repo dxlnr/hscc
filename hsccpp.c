@@ -233,7 +233,6 @@ token_t *get_next_token(file_buffer_t *file) {
       } else tl = 1;
       return assign_tok(get_tok_expr((char *) pstart, tl) , 
                                      (char *) pstart, tl, file->line_num);
-
     case '&':
     case '|':
     case '+':
@@ -265,7 +264,6 @@ token_t *get_next_token(file_buffer_t *file) {
       } else tl = 1;
       return assign_tok(get_tok_expr((char *) pstart, tl) , 
                                      (char *) pstart, tl, file->line_num);
-
     /* comments or operator */
     case '/':
       p++;

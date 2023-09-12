@@ -60,6 +60,24 @@ typedef struct file_spec {
   char name[1];
 } file_spec_t;
 
+/* Abstract Syntax Tree */
+typedef enum {
+  AST_OPS,
+  AST_LITERAL,
+  AST_VAR_REF,
+  AST_ASSIGN,
+  AST_IF_ELSE,
+  AST_FUNC,     
+} ast_type_t;
+
+/* struct ast_node { */
+/*   enum atype_t atype; */
+/*   struct hash_node *symbol; */
+/*   struct ast_node *children[NUM_CHILDREN]; */
+/*   struct ast_node *children[1]; */
+/* }; */
+
+/* struct ast_node *AST_HEAD; */
 
 #define T_IDENT 256
 
@@ -151,15 +169,16 @@ static inline int isoct(int c) {
 static inline int toup(int c) {
     return (c >= 'a' && c <= 'z') ? c - 'a' + 'A' : c;
 }
+/* token output. */
+void stdout_token(token_t *token);
 
-/* hsccpp functions */
 const char* get_token_str(int id);
 
 token_t *get_token(cc_state_t *s);
 
 tokens_t *cc_lex_analysis(cc_state_t *s);
 
-/* Runs the preprocessor */
+/* Runs the preprocessor pipeline. */
 void cc_preprocess(cc_state_t *s);
 
 #endif
