@@ -62,10 +62,10 @@ eof             ''                                      Loc=<test/files/simple.c
 (3) **Parsing**
 
 The main goal for the parser is to transform the token stream into a logical and contextual structure.
-This structure is called abstract syntax tree (or an AST) which is a tree-shaped representation of source code.
+This structure is called abstract syntax tree (or an [AST](https://en.wikipedia.org/wiki/Abstract_syntax_tree)) which is a tree-shaped representation of the source code.
 
 ```bash
-# dump the ast to console.
+# dump the AST to console using clang.
 clang -Xclang -dump-tokens test/files/simple.c
 # AST (partly)
 `-FunctionDecl 0xe60860 <test/files/simple.c:3:1, line:20:1> line:3:5 main 'int ()'
@@ -75,10 +75,31 @@ clang -Xclang -dump-tokens test/files/simple.c
     |-CallExpr 0xe60a80 <line:5:5, col:32> 'int'
     | |-ImplicitCastExpr 0xe60a68 <col:5> 'int (*)(const char *, ...)' <FunctionToPointerDecay>
     | | `-DeclRefExpr 0xe60998 <col:5> 'int (const char *, ...)' Function 0xe45898 'printf' 'int (const char *, ...)'
-    | `-ImplicitCastExpr 0xe60ac0 <col:12> 'const char *' <NoOp>
-    |   `-ImplicitCastExpr 0xe60aa8 <col:12> 'char *' <ArrayToPointerDecay>
-    |     `-StringLiteral 0xe609f8 <col:12> 'char[19]' lvalue "Enter an integer: "
+...
+```
 
+Example: Implementation technique: [Recursive Descent Parsing](https://martin.janiczek.cz/2023/07/03/demystifying-pratt-parsers.html).
+
+```bash
+3 * 4 + 5
+
+* priority 10
++ priority 5
+
+parse_expr(-99):
+  3
+  * -> recursively call parse_expr with priority of * is 10
+  10 > -999, so recurse
+  parse_expr(10)
+    4
+    + -> recursively call parse_expr with priority of + is 5
+    5 < 10, so DO NOT recurse
+    return 4
+
+  left = 3 * 4
+  + -> recursively call parse_expr with priority of + is 5
+  50 > -99, so recurse
+  parse_expr(50)
 ```
 
 

@@ -18,16 +18,16 @@
 #include <unistd.h>
 
 /* parse_args return codes: */
-#define ARG_HELP        1
+#define ARG_HELP          1
 
-#define CC_OUTPUT_OBJ   1 /* object file */
+#define CC_OUTPUT_OBJ     1 /* object file */
 
 /* filetypes: */
-#define FILE_TYPE_NONE   0
-#define FILE_TYPE_C      1
-#define FILE_TYPE_ASM    2
+#define FILE_TYPE_NONE    0
+#define FILE_TYPE_C       1
+#define FILE_TYPE_ASM     2
 
-#define IO_BUF_SIZE 8192
+#define IO_BUF_SIZE       8192
 
 typedef struct file_buffer {
   /* buf_ptr equals buf_end : the buffer is considered empty. */
@@ -39,6 +39,8 @@ typedef struct file_buffer {
   struct file_buffer *prev;
   /* line number for error reporting */
   int line_num;
+  /* inline counter for error reporting */
+  int inline_c;
   /* file descriptor. 
    *
    * Provides a handle for low-level operations and interactions with the operating system. 
@@ -60,7 +62,10 @@ typedef struct file_spec {
   char name[1];
 } file_spec_t;
 
-/* Abstract Syntax Tree */
+/* Parser: Abstract Syntax Tree (AST)
+ *
+ * AST Types
+ * */
 typedef enum {
   AST_OPS,
   AST_LITERAL,
@@ -70,14 +75,23 @@ typedef enum {
   AST_FUNC,     
 } ast_type_t;
 
-/* struct ast_node { */
-/*   enum atype_t atype; */
-/*   struct hash_node *symbol; */
-/*   struct ast_node *children[NUM_CHILDREN]; */
-/*   struct ast_node *children[1]; */
-/* }; */
+#define MAX_CHILDREN     8
 
-/* struct ast_node *AST_HEAD; */
+/* Single node in AST */
+struct ast_node{
+  ast_type_t ast_type;
+  struct ast_node* child[MAX_CHILDREN];
+  struct ast_node* next;
+  /* for type checking of exps */
+  /* exp_type_t exp_type; */ 
+  struct{
+    int op;
+    int value;
+    char* name;
+  } attr;
+  /* symbol_table_t* symbol_table; */
+};
+
 
 #define T_IDENT 256
 
@@ -106,8 +120,15 @@ typedef struct {
 #define TOK(id, str) {str, id},
 static token_kw_t token_str[] = {
   #include "include/toks.h"
-};
 #undef TOK
+  {"identifier", t_ident},
+  {"string_literal", t_string_literal},
+  {"wide_string_literal", t_wide_string_literal},
+  {"utf8_string_literal", t_utf8_string_literal},
+  {"utf16_string_literal", t_utf16_string_literal},
+  {"utf32_string_literal", t_utf32_string_literal},
+  {"numeric_const", t_numeric_const},
+};
 
 /* Single Token */
 typedef struct token {
@@ -150,34 +171,17 @@ typedef struct cc_state {
   int fc;
 } cc_state_t;
 
-/* hsccpp 
+/* hsccpp.c
  *
- * Checking for characters such as whitespace, identifiers, and numbers.
+ * token helpers 
  * */
-static inline int is_space(int ch) {
-    return ch == ' ' || ch == '\t' || ch == '\v' || ch == '\f' || ch == '\r';
-}
-static inline int isid(int c) {
-    return (c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z') || c == '_';
-}
-static inline int isnum(int c) {
-    return c >= '0' && c <= '9';
-}
-static inline int isoct(int c) {
-    return c >= '0' && c <= '7';
-}
-static inline int toup(int c) {
-    return (c >= 'a' && c <= 'z') ? c - 'a' + 'A' : c;
-}
-/* token output. */
+void show_tokens(tokens_t *tokens);
 void stdout_token(token_t *token);
-
 const char* get_token_str(int id);
-
+token_type_t get_tok_expr(const char *str, int ptr_len);
 token_t *get_token(cc_state_t *s);
 
 tokens_t *cc_lex_analysis(cc_state_t *s);
-
 /* Runs the preprocessor pipeline. */
 void cc_preprocess(cc_state_t *s);
 

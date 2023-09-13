@@ -5,17 +5,13 @@
 
 #include "hscc.h"
 
-void stdout_token(token_t *token) {
-  if (token != NULL)
-    /* printf("  %-16s '%.*s'\n", token_str[token->tok], token->ptr_len, token->str); */
-    printf("  %-16d %-25.*s %d\n", token->tok, token->ptr_len, token->str, token->line_num);
-}
-
-void show_tokens(tokens_t *tokens) {
-  while (tokens != NULL) {
-    stdout_token(&tokens->tok);
-    tokens = tokens->next;
+const char *get_tok_str(int tok) {
+  for (int i = 0; token_str[i].id != sizeof(token_str) / sizeof(token_str[0]); i++) {
+    if (token_str[i].id == tok) {
+      return token_str[i].str;
+    }
   }
+  return NULL;
 }
 
 token_type_t get_tok_expr(const char *str, int ptr_len) {
@@ -25,6 +21,18 @@ token_type_t get_tok_expr(const char *str, int ptr_len) {
     }
   }
   return t_eof;
+}
+
+void stdout_token(token_t *token) {
+  if (token != NULL)
+    printf("  %-20s %-25.*s %d\n", get_tok_str(token->tok), token->ptr_len, token->str, token->line_num);
+}
+
+void show_tokens(tokens_t *tokens) {
+  while (tokens != NULL) {
+    stdout_token(&tokens->tok);
+    tokens = tokens->next;
+  }
 }
 
 /* find a token and add it to table. */
@@ -51,8 +59,11 @@ void append_token(tokens_t **head_ref, token_t *token) {
 
 void run_preprocessing(int tok)
 {
+  char * strs = get_tok_str(tok);
+  printf("Preprocessing: %s\n", strs);
   switch(tok) {
     case t_define:
+      printf("Preprocessing (define): %d\n", tok);
     case t_include:
     case t_include_next:
     case t_ifdef:
@@ -66,11 +77,12 @@ void run_preprocessing(int tok)
     case t_line:
     case t_pragma:
     default:
+      printf("Preprocessing: %d\n", tok);
       break;
     }
 }
 
-uint8_t *parse_comment(uint8_t *p){
+uint8_t *parse_binary_ops(uint8_t *p){
 }
 
 token_t* assign_tok(token_type_t tok, char *str, int len, int line_num) {
@@ -97,12 +109,14 @@ static int get_next_ch(file_buffer_t *fb)
 }
 
 token_t *get_next_token(file_buffer_t *file) {
-  int c, tl;
+  int c; 
+  int tl;
   token_t *t;
-  uint8_t *p, *pstart;
+  uint8_t *p; 
+  uint8_t *pstart;
+
   p = file->buf_ptr;
   pstart = p;
-  
   c = *p;
   switch (c) {
     case ' ':
@@ -154,10 +168,10 @@ token_t *get_next_token(file_buffer_t *file) {
     case 'U': case 'V': case 'W': case 'X':
     case 'Y': case 'Z': 
     case '_': 
-    is_identifer:
+    is_identifier:
       p++;
       if (isalnum(*p) || *p == '_')
-        goto is_identifer;
+        goto is_identifier;
 
       file->buf_ptr = --p;
       return assign_tok(t_ident, (char *) pstart, p - pstart + 1, file->line_num);
@@ -167,7 +181,7 @@ token_t *get_next_token(file_buffer_t *file) {
       if (*p == '\'' || *p == '\"') {
         goto is_string_const;
       } else {
-        goto is_identifer;
+        goto is_identifier;
       }
 
     case '0': case '1': case '2': case '3':
@@ -294,6 +308,8 @@ void cc_preprocess(cc_state_t *s) {
     if (tok != NULL)
       append_token(&tokens, tok);
 
+    /* run_preprocessing(tok->tok); */
+
     int c = get_next_ch(s->fb);
     if (c == -1) {
       if (s->verbose)
@@ -307,4 +323,12 @@ void cc_preprocess(cc_state_t *s) {
     show_tokens(tokens);
     exit(0);
   }
+
+  /* parsing */
+  for (;;) {
+  }
+  if (s->dump_ast) {
+    exit(0);
+  }
+
 }
