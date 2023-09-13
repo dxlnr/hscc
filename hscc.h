@@ -93,7 +93,8 @@ struct ast_node{
 };
 
 
-#define T_IDENT 256
+#define N_KEYWORDS      46
+#define T_IDENT         256
 
 typedef enum token_type {
   t_eof = T_IDENT - 1

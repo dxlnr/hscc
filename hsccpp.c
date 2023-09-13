@@ -25,7 +25,11 @@ token_type_t get_tok_expr(const char *str, int ptr_len) {
 
 void stdout_token(token_t *token) {
   if (token != NULL)
-    printf("  %-20s %-25.*s %d\n", get_tok_str(token->tok), token->ptr_len, token->str, token->line_num);
+    printf("  %-20s %-25.*s %d\n", 
+           get_tok_str(token->tok), 
+           token->ptr_len, 
+           token->str, 
+           token->line_num);
 }
 
 void show_tokens(tokens_t *tokens) {
@@ -59,12 +63,11 @@ void append_token(tokens_t **head_ref, token_t *token) {
 
 void run_preprocessing(int tok)
 {
-  char * strs = get_tok_str(tok);
-  printf("Preprocessing: %s\n", strs);
   switch(tok) {
     case t_define:
-      printf("Preprocessing (define): %d\n", tok);
     case t_include:
+      printf("(pp) %s\n", get_tok_str(tok));
+      break;
     case t_include_next:
     case t_ifdef:
     case t_ifndef:
@@ -76,13 +79,22 @@ void run_preprocessing(int tok)
     case t_warning:
     case t_line:
     case t_pragma:
+      break;
     default:
-      printf("Preprocessing: %d\n", tok);
       break;
     }
 }
 
 uint8_t *parse_binary_ops(uint8_t *p){
+}
+
+int is_kw_token(char *str, int len) {
+  for (int i = 0; i <= N_KEYWORDS; i++) {
+    if (strncmp(token_str[i].str, str, len) == 0) {
+      return 1;
+    }
+  }
+  return 0;
 }
 
 token_t* assign_tok(token_type_t tok, char *str, int len, int line_num) {
@@ -174,8 +186,13 @@ token_t *get_next_token(file_buffer_t *file) {
         goto is_identifier;
 
       file->buf_ptr = --p;
-      return assign_tok(t_ident, (char *) pstart, p - pstart + 1, file->line_num);
 
+      if (is_kw_token((char *) pstart, p - pstart + 1))
+        return assign_tok(get_tok_expr((char *) pstart, p - pstart + 1), 
+                          (char *) pstart, p - pstart + 1, file->line_num);
+      else
+        return assign_tok(t_ident, 
+                          (char *) pstart, p - pstart + 1, file->line_num);
     case 'L':
       p++;
       if (*p == '\'' || *p == '\"') {
@@ -305,10 +322,11 @@ void cc_preprocess(cc_state_t *s) {
   for (;;) {
     tok = get_next_token(s->fb);
 
-    if (tok != NULL)
+    if (tok != NULL) {
       append_token(&tokens, tok);
-
-    /* run_preprocessing(tok->tok); */
+      /* preprocess token immediately. */
+      run_preprocessing(tok->tok);
+    }
 
     int c = get_next_ch(s->fb);
     if (c == -1) {
