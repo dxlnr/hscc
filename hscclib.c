@@ -17,10 +17,19 @@ void cc_free(void *ptr) {
   free(ptr);
 }
 
+void cc_close_buf(file_buffer_t *file)
+{
+    file_buffer_t *bf = file;
+    if (bf->fd > 0) {
+        close(bf->fd);
+    }
+    file = bf->prev;
+    cc_free(bf);
+}
+
 void tcc_memcheck(int flag)
 {
 }
-
 
 void mem_error(const char *msg)
 {
@@ -92,7 +101,8 @@ static const arg_options_t args_options [] = {
   { NULL,           arg_option_ignored,     0 }
 };
 
-int parse_args(cc_state_t *s, int *argc, char ***argv) {
+int parse_args(cc_state_t *s, int *argc, char ***argv) 
+{
   int nb_args = *argc;
   int ca = 1;
 
@@ -129,7 +139,8 @@ int parse_args(cc_state_t *s, int *argc, char ***argv) {
   return 0;
 }
 
-char *cc_get_file_ext(const char *fn) {
+char *cc_get_file_ext(const char *fn) 
+{
   for (int i = strlen(fn) - 1; i >= 0; --i) {
     if (fn[i] == '.') {
       return (char *)fn + i;
@@ -179,7 +190,8 @@ int write_file_to_buf(cc_state_t *s, const char *fn)
   return fd;
 }
 
-int cc_add_file(cc_state_t *s, const char *fn) {
+int cc_add_file(cc_state_t *s, const char *fn) 
+{
   char *ext = cc_get_file_ext(fn);
   if (ext == NULL) {
     printf("Error: %s\n", "No file extension.");
@@ -221,7 +233,8 @@ cc_state_t *cc_init(void) {
   return s;
 }
 
-void cc_delete(cc_state_t *s) {
+void cc_delete(cc_state_t *s) 
+{
   dynarray_reset(&s->files, &s->fc);
   free(s);
 

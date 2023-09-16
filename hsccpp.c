@@ -5,7 +5,8 @@
 
 #include "hscc.h"
 
-const char *get_tok_str(int tok) {
+const char *get_tok_str(int tok) 
+{
   for (int i = 0; token_str[i].id != sizeof(token_str) / sizeof(token_str[0]); i++) {
     if (token_str[i].id == tok) {
       return token_str[i].str;
@@ -14,7 +15,8 @@ const char *get_tok_str(int tok) {
   return NULL;
 }
 
-token_type_t get_tok_expr(const char *str, int ptr_len) {
+token_type_t get_tok_expr(const char *str, int ptr_len) 
+{
   for (int i = 0; token_str[i].str != NULL; i++) {
     if (strncmp(token_str[i].str, str, ptr_len) == 0) {
       return token_str[i].id;
@@ -23,7 +25,8 @@ token_type_t get_tok_expr(const char *str, int ptr_len) {
   return t_eof;
 }
 
-void stdout_token(token_t *token) {
+void stdout_token(token_t *token) 
+{
   if (token != NULL)
     printf("  %-20s %-25.*s %d\n", 
            get_tok_str(token->tok), 
@@ -32,7 +35,8 @@ void stdout_token(token_t *token) {
            token->line_num);
 }
 
-void show_tokens(tokens_t *tokens) {
+void show_tokens(tokens_t *tokens) 
+{
   while (tokens != NULL) {
     stdout_token(&tokens->tok);
     tokens = tokens->next;
@@ -44,7 +48,8 @@ token_t *tok_add(const char *str, int len)
 {
 }
 
-void append_token(tokens_t **head_ref, token_t *token) {
+void append_token(tokens_t **head_ref, token_t *token) 
+{
   tokens_t * n_token = (tokens_t *) malloc(sizeof(tokens_t));
   n_token->tok = *token;
 
@@ -61,21 +66,34 @@ void append_token(tokens_t **head_ref, token_t *token) {
   last->next = n_token;
 }
 
-/* token_t *next_token(tokens_t **toks) { */
-/*   tokens_t* ts = *toks; */
+void free_tokens_list(tokens_t* head) 
+{
+  tokens_t* current_tok = head;
+  tokens_t* next_tok = NULL;
 
-  /* stdout_token(); */ 
-/*   if (*toks->next != NULL) { */
-/*     return NULL; */
-/*   } */
-/* } */
+  while (current_tok != NULL) {
+    next_tok = current_tok->next; 
+    free(current_tok);
+    current_tok = next_tok;
+  }
+}
+
+token_t *next_token(tokens_t **toks) 
+{
+  tokens_t* ts = *toks;
+
+  if (ts->next != NULL) {
+    *toks = ts->next;
+    return &ts->tok;
+  }
+  return NULL;
+}
 
 void run_preprocessing(int tok)
 {
   switch(tok) {
     case t_define:
     case t_include:
-      break;
     case t_include_next:
     case t_ifdef:
     case t_ifndef:
@@ -93,10 +111,12 @@ void run_preprocessing(int tok)
     }
 }
 
-uint8_t *parse_binary_ops(uint8_t *p){
+uint8_t *parse_binary_ops(uint8_t *p)
+{
 }
 
-int is_kw_token(char *str, int len) {
+int is_kw_token(char *str, int len) 
+{
   for (int i = 0; i <= N_KEYWORDS; i++) {
     if (strncmp(token_str[i].str, str, len) == 0) {
       return 1;
@@ -105,8 +125,10 @@ int is_kw_token(char *str, int len) {
   return 0;
 }
 
-token_t* assign_tok(token_type_t tok, char *str, int len, int line_num) {
+token_t* assign_tok(token_type_t tok, char *str, int len, int line_num) 
+{
   token_t *token = (token_t *) malloc(sizeof(token_t));
+
   if (token == NULL)
     exit(1);
   token->tok = tok;
@@ -122,13 +144,15 @@ static int get_next_ch(file_buffer_t *fb)
   int ch = *fb->buf_ptr;
   /* end of buffer/file handling */
   if (ch == CH_EOB || fb->buf_ptr >= fb->buf_end) {
+    cc_close_buf(fb);
     return -1;
   }
   fb->buf_ptr++;
   return ch;
 }
 
-token_t *get_next_token(file_buffer_t *file) {
+token_t *find_next_token(file_buffer_t *file) 
+{
   int c; 
   int tl;
   token_t *t;
@@ -323,12 +347,27 @@ token_t *get_next_token(file_buffer_t *file) {
   return NULL;
 }
 
-int cc_preprocess(cc_state_t *s) {
+void cc_parse(tokens_t *toks) 
+{
+  token_t *t;
+
+next_token:
+  t = next_token(&toks);
+
+  switch(t->tok) {
+    default:
+      break;
+  }
+}
+
+
+int cc_preprocess(cc_state_t *s) 
+{
   tokens_t *tokens;
   token_t *tok;
 
   for (;;) {
-    tok = get_next_token(s->fb);
+    tok = find_next_token(s->fb);
 
     if (tok != NULL) {
       append_token(&tokens, tok);
@@ -344,19 +383,23 @@ int cc_preprocess(cc_state_t *s) {
     }
   }
   if (s->verbose) show_tokens(tokens);
-
   if (s->dump_tokens) {
     show_tokens(tokens);
     return 0;
   }
 
   /* parsing */
-  /* for (;;) { */
-  /*   next_token(tokens); */
-  /* } */
-  /* if (s->dump_ast) { */
-  /*   exit(0); */
-  /* } */
+  for (;;) {
+    tok = next_token(&tokens);
+    
+    if (tok != NULL) {
+    } else {
+      break;
+    }
+  }
+  if (s->dump_ast) {
+    exit(0);
+  }
 
   return 0;
 }

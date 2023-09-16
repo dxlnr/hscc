@@ -112,6 +112,8 @@ typedef enum token_type {
 
  /* end of buffer or '\0' char in file */
 #define CH_EOB  '\\' 
+/* end of file */
+#define CH_EOF   (-1)   
 
 // LUT.
 typedef struct {
@@ -175,6 +177,8 @@ typedef struct cc_state {
 
 /* hscc.c */
 const char *default_out_file(cc_state_t *s, const char *ffile);
+
+void cc_close_buf(file_buffer_t *file);
 /* hsccpp.c
  *
  * token helpers 
