@@ -110,7 +110,8 @@ typedef enum token_type {
   ,t_numeric_const
 } token_type_t;
 
-#define CH_EOB  '\\'  /* end of buffer or '\0' char in file */
+ /* end of buffer or '\0' char in file */
+#define CH_EOB  '\\' 
 
 // LUT.
 typedef struct {
@@ -122,13 +123,13 @@ typedef struct {
 static token_kw_t token_str[] = {
   #include "include/toks.h"
 #undef TOK
-  {"identifier", t_ident},
-  {"string_literal", t_string_literal},
-  {"wide_string_literal", t_wide_string_literal},
-  {"utf8_string_literal", t_utf8_string_literal},
-  {"utf16_string_literal", t_utf16_string_literal},
-  {"utf32_string_literal", t_utf32_string_literal},
-  {"numeric_const", t_numeric_const},
+  {"identifier",            t_ident},
+  {"string_literal",        t_string_literal},
+  {"wide_string_literal",   t_wide_string_literal},
+  {"utf8_string_literal",   t_utf8_string_literal},
+  {"utf16_string_literal",  t_utf16_string_literal},
+  {"utf32_string_literal",  t_utf32_string_literal},
+  {"numeric_const",         t_numeric_const},
 };
 
 /* Single Token */
@@ -172,6 +173,8 @@ typedef struct cc_state {
   int fc;
 } cc_state_t;
 
+/* hscc.c */
+const char *default_out_file(cc_state_t *s, const char *ffile);
 /* hsccpp.c
  *
  * token helpers 
@@ -184,6 +187,6 @@ token_t *get_token(cc_state_t *s);
 
 tokens_t *cc_lex_analysis(cc_state_t *s);
 /* Runs the preprocessor pipeline. */
-void cc_preprocess(cc_state_t *s);
+int cc_preprocess(cc_state_t *s);
 
 #endif

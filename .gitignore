@@ -1,4 +1,4 @@
-main.o
-main.hi
-main
-lexer.o
+.gdb_history
+
+*.o
+.vscode

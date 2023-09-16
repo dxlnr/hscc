@@ -5,7 +5,7 @@ Little C Compiler in the making. Basically exploring. Written in C (maybe Haskel
 ## Overview
 
 ```bash
-Preprocessor -> Lexing -> Parsing -> Static Analysis -> Intermediate Representation -> Optimization -> Code Generation
+Preprocessor -> Lexing -> Parsing -> Type Checking -> Intermediate Representation -> Optimization -> Code Generation
 ```
 (1) **Preprocessor**
 

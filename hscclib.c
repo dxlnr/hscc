@@ -13,9 +13,14 @@ int strin(char **arr, int len, char *s) {
   return 0;
 }
 
-void hscc_free(void *ptr) {
+void cc_free(void *ptr) {
   free(ptr);
 }
+
+void tcc_memcheck(int flag)
+{
+}
+
 
 void mem_error(const char *msg)
 {
@@ -49,8 +54,8 @@ static void dynarray_reset(void *pp, int *n)
   void **p;
   for (p = *(void***)pp; *n; ++p, --*n)
     if (*p)
-      hscc_free(*p);
-  hscc_free(*(void**)pp);
+      cc_free(*p);
+  cc_free(*(void**)pp);
   *(void**)pp = NULL;
 }
 
@@ -192,13 +197,14 @@ int cc_add_file(cc_state_t *s, const char *fn) {
 }
 
 int cc_compile(cc_state_t *s, const char *str, int fd) {
+  int ret;
 
   if (setjmp(s->err_jmp_buf) == 0) {
     s->nb_errors = 0;
 
-    cc_preprocess(s);
+    ret = cc_preprocess(s);
   }
-  return 0;
+  return s->nb_errors != 0 ? -1 : 0;
 }
 
 cc_state_t *cc_init(void) {
@@ -216,5 +222,10 @@ cc_state_t *cc_init(void) {
 }
 
 void cc_delete(cc_state_t *s) {
+  dynarray_reset(&s->files, &s->fc);
   free(s);
+
+#ifdef MEM_DEBUG
+  cc_memcheck(-1);
+#endif
 }

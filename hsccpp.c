@@ -61,12 +61,20 @@ void append_token(tokens_t **head_ref, token_t *token) {
   last->next = n_token;
 }
 
+/* token_t *next_token(tokens_t **toks) { */
+/*   tokens_t* ts = *toks; */
+
+  /* stdout_token(); */ 
+/*   if (*toks->next != NULL) { */
+/*     return NULL; */
+/*   } */
+/* } */
+
 void run_preprocessing(int tok)
 {
   switch(tok) {
     case t_define:
     case t_include:
-      printf("(pp) %s\n", get_tok_str(tok));
       break;
     case t_include_next:
     case t_ifdef:
@@ -315,7 +323,7 @@ token_t *get_next_token(file_buffer_t *file) {
   return NULL;
 }
 
-void cc_preprocess(cc_state_t *s) {
+int cc_preprocess(cc_state_t *s) {
   tokens_t *tokens;
   token_t *tok;
 
@@ -325,7 +333,7 @@ void cc_preprocess(cc_state_t *s) {
     if (tok != NULL) {
       append_token(&tokens, tok);
       /* preprocess token immediately. */
-      run_preprocessing(tok->tok);
+      /* run_preprocessing(tok->tok); */
     }
 
     int c = get_next_ch(s->fb);
@@ -339,14 +347,16 @@ void cc_preprocess(cc_state_t *s) {
 
   if (s->dump_tokens) {
     show_tokens(tokens);
-    exit(0);
+    return 0;
   }
 
   /* parsing */
-  for (;;) {
-  }
-  if (s->dump_ast) {
-    exit(0);
-  }
+  /* for (;;) { */
+  /*   next_token(tokens); */
+  /* } */
+  /* if (s->dump_ast) { */
+  /*   exit(0); */
+  /* } */
 
+  return 0;
 }

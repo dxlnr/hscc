@@ -19,7 +19,7 @@ static const char show_help[] =
   "  -dump-tokens        Dump the tokens.\n"
 ;
 
-const char *default_out(cc_state_t *s, const char *ffile)
+const char *default_out_file(cc_state_t *s, const char *ffile)
 {
   char buf[1024];
   char *ext;
@@ -60,5 +60,8 @@ int main(int argc, char **argv)
     done = ret || ++n >= state->fc;
   } while (!done && (state->output_type != CC_OUTPUT_OBJ ));
 
-  return 0;
+  /* clean up */
+  cc_delete(state);
+
+  return ret;
 }
